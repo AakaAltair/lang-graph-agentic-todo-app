@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  ==========================================================================
+  Part 1: The Absolute Foundation - CSS Variable Architecture
+  ==========================================================================
+*/
+:root {
+  /* --- Core Layout & Colors --- */
+  --background-color: #121212;
+  --card-content-bg: #1e1e1e;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-heading: #ffffff;
+  
+  /* --- Default Theme: "Spectrum" --- */
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #f72585 5%, #b5179e, #7209b7, #4361ee 45%, #4cc9f0 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #f72585, #b5179e, #7209b7, #560bad, #480ca8, #3a0ca3, #4361ee, #4cc9f0, #f72585);
+  --fill-gradient: radial-gradient(ellipse at bottom, #2c2c30, #1a1a1d 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #3a0ca3, #f72585, #4cc9f0);
+  --text-gradient: linear-gradient(90deg, #F72585, #7209B7, #4361EE, #4CC9F0);
+  --card-text-glow-gradient: linear-gradient(135deg, #2a1538, #0d1b3e, #2a1538);
+
+  /* --- Sizing & Shape --- */
+  --border-radius-card: 18px;
+  --border-radius-btn: 50px;
+  --border-size: 3px;
+  
+  /* --- Animation --- */
+  --spin-duration: 3s;
+  --spin-delay: 0s;
+}
+
+/* --- THEME 2: "Solar Flare" --- */
+:root.theme-solar {
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #fff000 5%, #ffdb00, #ffc300 45%, #ffa500 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #fff000, #ffdb00, #ffc300, #ffa500, #ff8c00, #fff000);
+  --fill-gradient: radial-gradient(ellipse at bottom, #3d2a00, #221800 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #ff8c00, #ffc300, #fff000);
+  --text-gradient: linear-gradient(90deg, #fff000, #ffc300, #ff8c00);
+  --card-text-glow-gradient: linear-gradient(135deg, #3d2a00, #221800, #3d2a00);
+  --background-color: #221800;
+}
+
+/* --- THEME 3: "Emerald Matrix" --- */
+:root.theme-matrix {
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #d8f3dc 5%, #95d5b2, #52b788 45%, #2d6a4f 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #95d5b2, #74c69d, #52b788, #40916c, #2d6a4f, #1b4332, #95d5b2);
+  --fill-gradient: radial-gradient(ellipse at bottom, #204436, #142b23 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #1b4332, #52b788, #95d5b2);
+  --text-gradient: linear-gradient(90deg, #d8f3dc, #95d5b2, #52b788, #2d6a4f);
+  --card-text-glow-gradient: linear-gradient(135deg, #142b23, #2d6a4f, #142b23);
+  --background-color: #021d0a;
+}
+
+/* --- THEME 4: "Oceanic Depth" --- */
+:root.theme-oceanic {
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #caf0f8 5%, #90e0ef, #48cae4 45%, #0096c7 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ade8f4, #90e0ef, #48cae4, #00b4d8, #0096c7, #0077b6, #03045e, #ade8f4);
+  --fill-gradient: radial-gradient(ellipse at bottom, #162d66, #0d1b3e 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #03045e, #0077b6, #90e0ef);
+  --text-gradient: linear-gradient(90deg, #caf0f8, #90e0ef, #00b4d8, #0077b6);
+  --card-text-glow-gradient: linear-gradient(135deg, #0d1b3e, #0077b6, #0d1b3e);
+  --background-color: #031622;
+}
+
+/* --- THEME 5: "Tungsten" --- */
+:root.theme-mono {
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #e0e0e0 5%, #b0b0b0, #808080 45%, #666666 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ffffff, #dcdcdc, #b0b0b0, #808080, #666666, #ffffff);
+  --fill-gradient: radial-gradient(ellipse at bottom, #2a2a2a, #111111 80%);
+  --fill-gradient-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(128, 128, 128, 0.15));
+  --text-gradient: linear-gradient(90deg, #EAEAEA, #B0B0B0, #777777);
+  --card-text-glow-gradient: linear-gradient(45deg, rgba(255, 255, 255, 0.03), rgba(128, 128, 128, 0.05));
+  --background-color: #0a0a0a;
+}
+
+/* Base body and typography styles */
+body {
+  color: var(--text-primary);
+  background: var(--background-color);
+  transition: background-color 0.5s ease;
+}
+h1, h2, h3 {
+  font-weight: 900;
+  color: var(--text-heading);
+}
+
+.gradient-text {
+  background: var(--text-gradient);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shine 4s linear infinite;
+}
+
+/* 
+  ==========================================================================
+  Part 2: The Signature "Flowing Comet" Border Implementation
+  ==========================================================================
+*/
+@keyframes spin {
+  from { rotate: 0deg; }
+  to   { rotate: 360deg; }
+}
+
+@keyframes background-pan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes text-shine {
+  to { background-position: 200% center; }
+}
+
+.spinner-border {
+  position: relative;
+  overflow: hidden;
+  padding: var(--border-size);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  isolation: isolate; /* KEY FIX: Creates a new stacking context */
+}
+
+.spinner-border:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px var(--shadow-color);
+}
+
+.spinner-border::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  padding-bottom: 300%; /* Using padding-bottom for aspect ratio is clever! Let's keep it. */
+  
+  /* --- THE CRITICAL FIXES --- */
+  background: var(--spinner-gradient);
+  background-repeat: no-repeat; /* FIX #1: Prevents the mirroring/doubling effect. */
+  background-size: 100% 100%;   /* FIX #2: Explicitly ensures the gradient fills the element just once. */
+
+  /* --- REFINED ANIMATION LOGIC --- */
+  translate: -50% -50%; /* Replaces the old 'transform' property for clarity. */
+  animation: spin var(--spin-duration) linear var(--spin-delay) infinite;
+
+  pointer-events: none;
+}
+
+.spinner-content {
+  background: var(--fill-gradient);
+  width: 100%;
+  height: 100%;
+  transition: background 0.5s ease;
+  position: relative; /* RECOMMENDED: Ensure it can hold a z-index */
+  z-index: 2;         /* RECOMMENDED: Place it above the ::before pseudo-element */
+}
+
+/* 
+  ==========================================================================
+  Part 3: The Layered Hover & Active States
+  ==========================================================================
+*/
+.spinner-border:hover .spinner-content {
+  background-image: var(--fill-gradient-hover);
+  background-size: 200% 200%;
+  animation: background-pan 3s ease-in-out infinite;
+}
+
+/* This applies to nav links or any element given 'is-active' class */
+.spinner-border.is-active .spinner-content {
+  background-image: var(--fill-gradient-hover);
+  background-size: 200% 200%;
+  animation: background-pan 4s ease-in-out infinite;
+}
+
+.spinner-border.is-active::before {
+  background: var(--spinner-gradient-active); 
+  animation-duration: 5s; 
+}
+
+/* 
+  ==========================================================================
+  Part 4: Component-Specific Blueprints
+  ==========================================================================
+*/
+.card-text-content {
+  background-color: var(--card-content-bg);
+  padding: 1.5rem;
+  border-radius: calc(var(--border-radius-card) - 10px);
+  transition: background 0.5s ease;
+}
+
+.card:hover .card-text-content {
+  background-image: var(--card-text-glow-gradient);
+  background-size: 200% 200%;
+  animation: background-pan 4.5s ease-in-out infinite;
+}
+
+.btn .spinner-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
