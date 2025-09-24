@@ -1,167 +1,234 @@
 "use client";
 
-import { useMemo, useState, useEffect } from 'react';
+// --- FIX 1: Import useCallback from React ---
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// --- Local Component Imports ---
 import { getTodos, createTodo, updateTodo } from '@/services/api';
 import { Todo } from '@/types';
-import SpinnerBorder from '@/components/SpinnerBorder';
 import SpinnerButton from '@/components/SpinnerButton';
 import TodoItem from '@/components/TodoItem';
 import Modal from '@/components/Modal';
-import TodoForm from '@/components/TodoForm';
-// --- NEW: Import the global modal store ---
+import TodoForm, { TodoFormData } from '@/components/TodoForm';
 import { useModalStore } from '@/components/WebSocketManager';
 
-// Define the possible filter types
-type FilterType = 'all' | 'active' | 'completed';
+// --- Zustand Store Import for Global Filter State ---
+import { useFilterStore } from '@/store/filterStore';
+import type { StatusFilter, DateFilter, OrderBy, OrderDirection } from '@/store/filterStore';
 
-// This type is now needed by TodoForm, so it's good to keep it exported or defined in a shared types file.
-export type TodoFormData = {
-  title: string;
-  description: string; // Changed to non-optional for the form
+// --- Helper Components ---
+const FilterButton: React.FC<{
+  onClick: () => void;
+  isActive: boolean;
+  children: React.ReactNode;
+}> = ({ onClick, isActive, children }) => {
+  if (isActive) {
+    return (
+      <div className="p-[3px]">
+        <SpinnerButton onClick={onClick} className="!py-[4.5px] !px-4 !text-sm">
+          {children}
+        </SpinnerButton>
+      </div>
+    );
+  }
+  return (
+    <div className="p-[3px]">
+      <button
+        onClick={onClick}
+        className="px-4 py-1.5 rounded-full font-semibold transition-colors text-sm bg-white/10 hover:bg-white/20 text-[--text-secondary]"
+      >
+        {children}
+      </button>
+    </div>
+  );
 };
 
+// --- Main Page Component ---
+
 export default function TodoPage() {
-  // --- STATE MANAGEMENT ---
-  const [filter, setFilter] = useState<FilterType>('all');
+  // --- STATE MANAGEMENT (Global and Local) ---
+  const {
+    statusFilter, setStatusFilter,
+    dateFilter, setDateFilter,
+    orderBy, setOrderBy,
+    orderDir, setOrderDir
+  } = useFilterStore();
+
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-
-  // --- GLOBAL STATE HOOKS (for AI interaction) ---
-  const { editingTodoId, setEditingTodoId } = useModalStore();
 
   const queryClient = useQueryClient();
 
   // --- DATA FETCHING ---
   const { data: todos, isLoading, isError } = useQuery<Todo[]>({
-    queryKey: ['todos'],
-    queryFn: getTodos,
+    queryKey: ['todos', orderBy, orderDir],
+    queryFn: () => getTodos({ orderBy, orderDir }),
   });
 
-  // --- NEW: Effect to react to global state changes from the WebSocket ---
-  // This `useEffect` acts as a listener. When the WebSocketManager updates the global
-  // `editingTodoId`, this effect will run and open the correct modal.
-  useEffect(() => {
-    if (editingTodoId !== null && todos) {
-      const todoToEdit = todos.find(t => t.id === editingTodoId);
-      if (todoToEdit) {
-        // We found the todo the AI wants to edit, so we open the modal.
-        handleOpenEditModal(todoToEdit);
-      }
-      // IMPORTANT: Reset the global state after we've handled the request.
-      // This prevents the modal from re-opening on every re-render.
-      setEditingTodoId(null);
-    }
-  }, [editingTodoId, todos, setEditingTodoId]); // Dependencies ensure this runs at the right times
-
-
-  // --- DATA MUTATIONS (No changes here) ---
-  const onMutationSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['todos'] });
-    setIsModalOpen(false);
-    setEditingTodo(null);
-  };
-
-  const createMutation = useMutation({
-    mutationFn: createTodo,
-    onSuccess: onMutationSuccess,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: updateTodo,
-    onSuccess: onMutationSuccess,
-  });
-
-  // --- EVENT HANDLERS (No changes here) ---
-  const handleOpenCreateModal = () => {
-    setEditingTodo(null);
-    setIsModalOpen(true);
-  };
-  
-  const handleOpenEditModal = (todo: Todo) => {
-    setEditingTodo(todo);
-    setIsModalOpen(true);
-  };
-
-  const handleFormSubmit = (formData: TodoFormData) => {
-    if (editingTodo) {
-      // Pass `completed` status along so it isn't reset on update
-      updateMutation.mutate({ id: editingTodo.id, ...formData, completed: editingTodo.completed });
-    } else {
-      // New todos are not completed by default
-      createMutation.mutate({ ...formData, completed: false });
-    }
-  };
-
-  // --- FILTERING LOGIC (No changes here) ---
+  // --- DATA FILTERING (Client-side) ---
   const filteredTodos = useMemo(() => {
     if (!todos) return [];
-    switch (filter) {
-      case 'active':
-        return todos.filter(todo => !todo.completed);
-      case 'completed':
-        return todos.filter(todo => todo.completed);
-      default:
-        return todos;
+    
+    let statusFiltered = todos;
+    if (statusFilter === 'active') {
+      statusFiltered = todos.filter(todo => !todo.completed);
+    } else if (statusFilter === 'completed') {
+      statusFiltered = todos.filter(todo => todo.completed);
     }
-  }, [todos, filter]);
 
+    if (dateFilter === 'all') return statusFiltered;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    let startRange: Date | null = null;
+    let endRange: Date | null = null;
 
-  // --- SUB-COMPONENTS & RENDER (No changes here) ---
-  const FilterButton = ({ type, label }: { type: FilterType, label: string }) => (
-    <button
-      onClick={() => setFilter(type)}
-      className={`px-4 py-2 rounded-full font-semibold transition-colors ${
-        filter === type
-          ? 'bg-[--text-accent] text-white'
-          : 'bg-white/10 hover:bg-white/20 text-[--text-secondary]'
-      }`}
-    >
-      {label}
-    </button>
-  );
+    switch (dateFilter) {
+      case 'today':
+        startRange = today;
+        endRange = new Date(today);
+        endRange.setDate(today.getDate() + 1);
+        break;
+      case 'week':
+        startRange = new Date(today);
+        startRange.setDate(today.getDate() - today.getDay());
+        break;
+      case 'month':
+        startRange = new Date(today.getFullYear(), today.getMonth(), 1);
+        break;
+      case 'custom':
+        startRange = startDate ? new Date(new Date(startDate).getTime() + (new Date(startDate).getTimezoneOffset() * 60000)) : null;
+        endRange = endDate ? new Date(new Date(endDate).getTime() + (new Date(endDate).getTimezoneOffset() * 60000) + 86400000) : null;
+        break;
+    }
 
+    return statusFiltered.filter(todo => {
+      const todoDate = new Date(todo.created_at);
+      if (startRange && todoDate < startRange) return false;
+      if (endRange && todoDate >= endRange) return false;
+      return true;
+    });
+
+  }, [todos, statusFilter, dateFilter, startDate, endDate]);
+
+  // --- DATA MUTATIONS & MODAL LOGIC ---
+  const onMutationSuccess = () => { queryClient.invalidateQueries({ queryKey: ['todos'] }); setIsModalOpen(false); };
+  const createMutation = useMutation({ mutationFn: createTodo, onSuccess: onMutationSuccess });
+  const updateMutation = useMutation({ mutationFn: updateTodo, onSuccess: onMutationSuccess });
+  
+  const { editingTodoId, setEditingTodoId } = useModalStore();
+  const handleOpenCreateModal = () => { setEditingTodo(null); setIsModalOpen(true); };
+  const handleOpenEditModal = useCallback((todo: Todo) => { setEditingTodo(todo); setIsModalOpen(true); }, []);
+
+  useEffect(() => {
+    if (editingTodoId !== null) {
+      const todoToEdit = todos?.find(t => t.id === editingTodoId);
+      if (todoToEdit) {
+        handleOpenEditModal(todoToEdit);
+      }
+      setEditingTodoId(null);
+    }
+  }, [editingTodoId, todos, setEditingTodoId, handleOpenEditModal]);
+  
+  const handleFormSubmit = (formData: TodoFormData) => {
+    if (editingTodo) {
+      updateMutation.mutate({ id: editingTodo.id, ...formData });
+    } else {
+      createMutation.mutate({ title: formData.title, description: formData.description });
+    }
+  };
+
+  // --- ANIMATION SYNC LOGIC ---
+  useEffect(() => {
+    const spinners = document.querySelectorAll('.todo-grid .spinner-border, .filter-controls .spinner-border');
+    spinners.forEach((spinner) => {
+      const element = spinner as HTMLElement;
+      const duration = Math.random() * (5.0 - 2.5) + 2.5;
+      const delay = -(Math.random() * duration);
+      element.style.setProperty('--spin-duration', `${duration.toFixed(2)}s`);
+      element.style.setProperty('--spin-delay', `${delay.toFixed(2)}s`);
+    });
+  }, [filteredTodos, statusFilter, dateFilter, orderBy, orderDir]);
+
+  // --- RENDER ---
   return (
     <div className="flex flex-col items-center">
       <h1 className="text-5xl font-black text-center mb-8">My Tasks</h1>
-
       <div className="mb-8">
-        <SpinnerButton onClick={handleOpenCreateModal}>
-          Add New Task
-        </SpinnerButton>
+        <SpinnerButton onClick={handleOpenCreateModal}>Add New Task</SpinnerButton>
       </div>
       
-      <SpinnerBorder 
-        className="card w-full max-w-2xl" 
-        borderRadiusVar="--border-radius-card"
-      >
-        <div className="card-text-content">
-          <div className="flex items-center justify-center gap-4 my-6">
-            <FilterButton type="all" label="All" />
-            <FilterButton type="active" label="Active" />
-            <FilterButton type="completed" label="Completed" />
+      <div className="w-full max-w-6xl mb-8 p-4 bg-black/20 rounded-lg flex flex-col gap-4 filter-controls">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold mr-2 text-white/80">Status:</span>
+            <FilterButton onClick={() => setStatusFilter('all')} isActive={statusFilter === 'all'}>All</FilterButton>
+            <FilterButton onClick={() => setStatusFilter('active')} isActive={statusFilter === 'active'}>Active</FilterButton>
+            <FilterButton onClick={() => setStatusFilter('completed')} isActive={statusFilter === 'completed'}>Completed</FilterButton>
           </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold mr-2 text-white/80">Date Created:</span>
+            <FilterButton onClick={() => setDateFilter('all')} isActive={dateFilter === 'all'}>All Time</FilterButton>
+            <FilterButton onClick={() => setDateFilter('today')} isActive={dateFilter === 'today'}>Today</FilterButton>
+            <FilterButton onClick={() => setDateFilter('week')} isActive={dateFilter === 'week'}>This Week</FilterButton>
+            <FilterButton onClick={() => setDateFilter('month')} isActive={dateFilter === 'month'}>This Month</FilterButton>
+            <FilterButton onClick={() => setDateFilter('custom')} isActive={dateFilter === 'custom'}>Custom</FilterButton>
+          </div>
+        </div>
+        
+        {dateFilter === 'custom' && (
+          <div className="flex items-center gap-4 pt-4 mt-4 border-t border-white/10">
+            <label className="font-semibold text-white/80">From:</label>
+            <input type="date" onChange={e => setStartDate(e.target.value)} value={startDate} className="bg-white/10 rounded-md p-1.5 text-white/80"/>
+            <label className="font-semibold text-white/80">To:</label>
+            <input type="date" onChange={e => setEndDate(e.target.value)} value={endDate} className="bg-white/10 rounded-md p-1.5 text-white/80"/>
+          </div>
+        )}
 
-          <ul className="space-y-4">
-            {isLoading && <p className="text-center text-[--text-secondary]">Loading tasks...</p>}
-            {isError && <p className="text-center text-red-500">Error loading tasks.</p>}
-            {!isLoading && !isError && filteredTodos.length === 0 && (
-              <p className="text-center text-[--text-secondary]">
-                No tasks match the current filter.
-              </p>
-            )}
+        <div className="flex flex-col md:flex-row md:items-center gap-x-8 gap-y-4 pt-4 border-t border-white/10">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold mr-2 text-white/80">Sort By:</span>
+            <FilterButton onClick={() => setOrderBy('created_at')} isActive={orderBy === 'created_at'}>Created Date</FilterButton>
+            <FilterButton onClick={() => setOrderBy('updated_at')} isActive={orderBy === 'updated_at'}>Updated Date</FilterButton>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold mr-2 text-white/80">Direction:</span>
+            <FilterButton onClick={() => setOrderDir('desc')} isActive={orderDir === 'desc'}>Newest First</FilterButton>
+            <FilterButton onClick={() => setOrderDir('asc')} isActive={orderDir === 'asc'}>Oldest First</FilterButton>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full max-w-6xl">
+        {isLoading && <p className="text-center text-[--text-secondary]">Loading tasks...</p>}
+        {isError && <p className="text-center text-red-500">Error loading tasks.</p>}
+        
+        {!isLoading && filteredTodos.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 todo-grid">
             {filteredTodos.map((todo) => (
               <TodoItem key={todo.id} todo={todo} onEdit={handleOpenEditModal} />
             ))}
-          </ul>
-        </div>
-      </SpinnerBorder>
+          </div>
+        )}
+        
+        {!isLoading && filteredTodos.length === 0 && (
+          <div className="text-center py-16">
+            <h3 className="text-xl font-semibold">No tasks found</h3>
+            <p className="text-[--text-secondary]">Try adjusting your filters or create a new task!</p>
+          </div>
+        )}
+      </div>
 
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title={editingTodo ? 'Edit Task' : 'Create New Task'}
       >
+        {/* --- FIX 2: Corrected function name --- */}
         <TodoForm 
           onSubmit={handleFormSubmit}
           initialData={editingTodo}

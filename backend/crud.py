@@ -1,62 +1,51 @@
-# --- COMPLETE AND UPDATED CODE ---
-
+import re
+from typing import List, Optional
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from . import models, schemas
-# --- NEW: Import the LangChain embedding model ---
+from sqlalchemy import desc, asc # <-- 1. Import `desc` and `asc` for sorting
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_genai._common import GoogleGenerativeAIError
 
-# --- NEW: Initialize the Embedding Model ---
-# This creates an instance of Google's model for generating embeddings.
-# It's lightweight and designed specifically for this purpose.
-try:
-    embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-except Exception as e:
-    print(f"Could not initialize embeddings model: {e}. Semantic search will not work.")
-    embeddings_model = None
+from . import models
 
-# --- NEW: Helper function to generate embeddings ---
+# --- Initialize the Embedding Model ---
+# This is a lightweight model specifically for creating text embeddings.
+embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+
 def get_embedding_for_text(text: str):
-    """
-    Generates a vector embedding for a given piece of text using the initialized model.
-    Returns None if the model failed to initialize.
-    """
-    if not embeddings_model:
+    """Generates a vector embedding for a given piece of text, handling potential API errors."""
+    try:
+        return embeddings_model.embed_query(text)
+    except GoogleGenerativeAIError as e:
+        print(f"Could not generate embedding due to API error: {e}")
         return None
-    return embeddings_model.embed_query(text)
+    except Exception as e:
+        print(f"An unexpected error occurred during embedding: {e}")
+        return None
 
-
-# --- UPDATED: create_new_todo ---
-# Now also generates and saves the embedding.
 def create_new_todo(db: Session, title: str, description: str = None):
-    """
-    Creates a new to-do item and also generates its vector embedding for semantic search.
-    """
-    # Combine title and description for a richer embedding context.
-    full_text = f"Title: {title}"
+    """Creates a new to-do and generates its vector embedding if possible."""
+    meaningful_text = title
     if description:
-        full_text += f"\nDescription: {description}"
+        meaningful_text += f". {description}"
     
-    # Generate the vector embedding for the combined text.
-    embedding = get_embedding_for_text(full_text)
+    emoji_pattern = re.compile("[\U00010000-\U0001FFFF]", flags=re.UNICODE)
+    clean_text = emoji_pattern.sub(r'', meaningful_text)
+    
+    embedding = get_embedding_for_text(clean_text)
     
     db_todo = models.Todo(
         title=title, 
         description=description,
-        embedding=embedding # Save the new embedding to the database.
+        embedding=embedding
     )
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)
     return db_todo
 
-
-# --- UPDATED: update_existing_todo ---
-# Now regenerates the embedding if the title or description changes.
 def update_existing_todo(db: Session, todo_id: int, title: str = None, description: str = None, completed: bool = None):
-    """
-    Updates an existing to-do item. If the title or description is changed,
-    it regenerates the vector embedding to keep it in sync with the text.
-    """
+    """Updates a to-do and regenerates its embedding if text changes and if possible."""
     db_todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     if not db_todo:
         return None
@@ -71,43 +60,67 @@ def update_existing_todo(db: Session, todo_id: int, title: str = None, descripti
     if completed is not None:
         db_todo.completed = completed
     
-    # If the text was modified, we must create a new embedding.
     if text_changed:
-        full_text = f"Title: {db_todo.title}\nDescription: {db_todo.description or ''}"
-        db_todo.embedding = get_embedding_for_text(full_text)
+        meaningful_text = db_todo.title
+        if db_todo.description:
+            meaningful_text += f". {db_todo.description}"
+        
+        emoji_pattern = re.compile("[\U00010000-\U0001FFFF]", flags=re.UNICODE)
+        clean_text = emoji_pattern.sub(r'', meaningful_text)
+        
+        embedding = get_embedding_for_text(clean_text)
+        if embedding:
+            db_todo.embedding = embedding
 
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)
     return db_todo
 
+# --- 2. THIS IS THE MODIFIED FUNCTION ---
+def get_all_todos(db: Session, order_by: str, order_dir: str):
+    """Retrieves all to-do items from the database with dynamic sorting."""
+    query = db.query(models.Todo)
 
-# --- UNCHANGED: get_all_todos ---
-# Your existing function for simple fetching and filtering.
-def get_all_todos(db: Session, status: str = "all"):
-    """
-    Retrieves to-do items from the database with filtering by completion status.
-    - status="all": Returns all to-dos.
-    - status="completed": Returns only completed to-dos.
-    - status="active": Returns only non-completed to-dos.
-    """
-    if status == "completed":
-        return db.query(models.Todo).filter(models.Todo.completed == True).all()
-    elif status == "active":
-        return db.query(models.Todo).filter(models.Todo.completed == False).all()
-    else:  # "all" or any other value will default to all
-        return db.query(models.Todo).all()
+    # Determine the column to sort by based on the `order_by` parameter
+    if order_by == 'updated_at':
+        sort_column = models.Todo.updated_at
+    else: # Default to sorting by 'created_at'
+        sort_column = models.Todo.created_at
+
+    # Determine the direction of the sort (ascending or descending)
+    if order_dir == 'asc':
+        query = query.order_by(asc(sort_column))
+    else: # Default to descending (newest first)
+        query = query.order_by(desc(sort_column))
+
+    return query.all()
 
 
-# --- UNCHANGED: delete_existing_todo ---
-# No changes are needed here as it doesn't involve embeddings.
-def delete_existing_todo(db: Session, todo_id: int):
-    """
-    Deletes a to-do item from the database.
-    """
-    db_todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
-    if not db_todo:
-        return None
-    db.delete(db_todo)
+def delete_multiple_todos_by_ids(db: Session, todo_ids: List[int]) -> int:
+    """Deletes multiple to-do items from the database based on a list of their IDs."""
+    num_deleted = db.query(models.Todo).filter(models.Todo.id.in_(todo_ids)).delete(synchronize_session=False)
     db.commit()
-    return db_todo
+    return num_deleted
+
+def delete_all_todos(db: Session) -> int:
+    """Deletes all to-do items from the database. Returns the number of items deleted."""
+    num_deleted = db.query(models.Todo).delete()
+    db.commit()
+    return num_deleted
+
+def semantic_search_with_date_filter(db: Session, query: str, limit: int, days_ago: Optional[int] = None) -> List[models.Todo]:
+    """Performs a semantic search with an optional date filter."""
+    # This function is not used by the main list view, so no changes are needed here.
+    q = db.query(models.Todo)
+    
+    if days_ago is not None:
+        target_date = datetime.utcnow() - timedelta(days=days_ago)
+        q = q.filter(models.Todo.created_at >= target_date)
+
+    query_embedding = get_embedding_for_text(query)
+    if not query_embedding:
+        return []
+    
+    results = q.order_by(models.Todo.embedding.cosine_distance(query_embedding)).limit(limit).all()
+    return results

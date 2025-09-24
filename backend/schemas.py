@@ -13,8 +13,10 @@ class TodoCreate(TodoBase):
     pass
 
 # Properties to receive on item update
-class TodoUpdate(TodoBase):
-    pass
+class TodoUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    completed: Optional[bool] = None
 
 # Properties to return to client
 class Todo(TodoBase):

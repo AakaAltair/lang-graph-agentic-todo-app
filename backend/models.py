@@ -17,3 +17,12 @@ class Todo(Base):
     completed = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # --- THIS IS THE FIX ---
+    # We add a `default` that is the same as the `server_default` for created_at.
+    # The `onupdate` will still trigger correctly when the row is changed.
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=func.now(), # <-- Set initial value on creation
+        onupdate=func.now()    # <-- Update value on any change
+    )

@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/store/themeStore';
 import { create } from 'zustand';
 
+// --- NEW: Import the global filter store ---
+import { useFilterStore } from '@/store/filterStore';
+
 // --- Global Zustand store for Modal Control ---
 // This allows any component (like our WebSocketManager) to request that the modal be opened.
 // The TodoPage component will listen to this store and react accordingly.
@@ -24,6 +27,9 @@ const WebSocketManager = () => {
   const router = useRouter();
   const { setTheme } = useThemeStore();
   const { setEditingTodoId } = useModalStore();
+  
+  // --- NEW: Get the setter functions from the filter store ---
+  const { setStatusFilter, setDateFilter, setOrderBy, setOrderDir } = useFilterStore();
 
   useEffect(() => {
     // This effect runs once when the component mounts to establish the connection.
@@ -38,12 +44,10 @@ const WebSocketManager = () => {
 
     // --- WebSocket Event Handlers ---
 
-    // Fired when the connection is successfully opened.
     ws.onopen = () => {
       console.log('✅ WebSocket connection established.');
     };
 
-    // Fired when a message is received from the server.
     ws.onmessage = (event) => {
       console.log("RAW WEBSOCKET MESSAGE RECEIVED:", event.data);
       
@@ -74,6 +78,25 @@ const WebSocketManager = () => {
                         setEditingTodoId(todoId);
                     }
                     break;
+                
+                // --- NEW CASES TO HANDLE FILTER COMMANDS ---
+                case 'set_status_filter':
+                    console.log(`EXECUTING status filter change to: ${message.payload}`);
+                    setStatusFilter(message.payload);
+                    break;
+                case 'set_date_filter':
+                    console.log(`EXECUTING date filter change to: ${message.payload}`);
+                    setDateFilter(message.payload);
+                    break;
+                case 'set_order_by':
+                    console.log(`EXECUTING order_by change to: ${message.payload}`);
+                    setOrderBy(message.payload);
+                    break;
+                case 'set_order_dir':
+                    console.log(`EXECUTING order_dir change to: ${message.payload}`);
+                    setOrderDir(message.payload);
+                    break;
+                
                 default:
                     console.warn('Unknown UI action received:', message.action);
             }
@@ -83,28 +106,33 @@ const WebSocketManager = () => {
       }
     };
 
-    // Fired when the connection is closed.
     ws.onclose = (event) => {
       console.log('❌ WebSocket connection closed.', event.reason);
     };
 
-    // Fired when an error occurs with the connection.
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
 
     // --- Cleanup Function ---
-    // This function is returned from useEffect and is called when the component unmounts.
-    // It's crucial for preventing memory leaks and orphaned connections.
     return () => {
       console.log('Closing WebSocket connection...');
       ws.close();
     };
 
-    // The dependency array ensures this effect runs only when these functions are stable.
-  }, [queryClient, router, setTheme, setEditingTodoId]);
+    // --- NEW: Add the new filter setters to the dependency array ---
+    // This ensures the useEffect hook has access to the latest versions of these functions.
+  }, [
+    queryClient, 
+    router, 
+    setTheme, 
+    setEditingTodoId,
+    setStatusFilter,
+    setDateFilter,
+    setOrderBy,
+    setOrderDir
+  ]);
 
-  // This component does not render any visible UI itself.
   return null;
 };
 

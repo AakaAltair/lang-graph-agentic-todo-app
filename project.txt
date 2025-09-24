@@ -2,6 +2,91 @@ E:\aakash\projects\chatbot\lang-graph-agentic-todo-app\backend>.\venv\Scripts\ac
 (venv) E:\aakash\projects\chatbot\lang-graph-agentic-todo-app>uvicorn backend.main:app --reload
 
 
+docker
+cd E:\aakash\projects\chatbot\lang-graph-agentic-todo-app\backend
+Run the Docker Compose Command: This command reads the docker-compose.yml file and starts the services defined in it (in our case, just the db service).
+code
+docker-compose up -d
+
+
+thanks a lot
+now i want to upload this on git, 
+so please provide read me to run this project step by step with the necessary codes and details about the project, tech stacks, and so on
+i already have uploaded a previous version
+but now i want to upload this version while preserving the previous one
+
+
+
+will it be able to handle queries like:
+here are todos, check and create the ones that are not present, do not create duplicate todos
+delete all the todos
+delete todos related to sports
+delete todos from the last month
+create a todo regarding guitar class:
+helps create a well detailed todo by discussing and suggesting relevant information like title: guitar class, description: attend guitar class from 6 pm to 8 pm tomorrow, ask or discuss for any other information, and asks for confirmation befor creating a todo
+check if i have already created this todo
+check for any duplicate todo 
+are there any upcoming todos
+are there any todos i missed deadline for
+delete multiple todos with semantic indication towards title or description: delete goa, 5km, book reading todo.
+it deletes
+[📚 Finish “Deep Work” Book
+Complete reading the remaining three chapters and write down key takeaways for productivity.
+
+🏃 Marathon Training Session
+Run 5 km as part of the half-marathon preparation plan.
+
+✈️ Book Tickets for Goa Trip
+Compare flight prices and book round-trip tickets for the upcoming friends’ vacation.
+]
+
+
+Sample create Todos
+
+Title: 🎂 Plan Birthday Surprise for Sarah
+Description: Buy a cake, decorations, and a small gift for Sarah’s birthday party on Saturday evening.
+
+Title: 🏥 Annual Health Checkup
+Description: Book an appointment with Dr. Mehta for a full-body health examination next week.
+
+Title: ⚽ Weekend Football Match
+Description: Join the neighborhood football game on Sunday morning at the community park.
+
+Title: 🍕 Friends Movie Night
+Description: Organize a movie night with college friends. Arrange popcorn, drinks, and Netflix setup.
+
+Title: 📚 Finish “Deep Work” Book
+Description: Complete reading the remaining three chapters and write down key takeaways for productivity.
+
+Title: 🧘 Morning Yoga Routine
+Description: Practice 30 minutes of yoga and breathing exercises to improve flexibility and mental calm.
+
+Title: 🛍️ Buy Groceries
+Description: Purchase vegetables, fruits, milk, and whole grains for the week.
+
+Title: 💼 Prepare Presentation for Client Meeting
+Description: Create a 10-slide presentation on Q3 sales results and upcoming marketing plans.
+
+Title: 🏃 Marathon Training Session
+Description: Run 5 km as part of the half-marathon preparation plan.
+
+Title: 🧑‍🍳 Cook Dinner for Parents
+Description: Try a new pasta recipe and prepare a warm family dinner on Friday night.
+
+Title: 🎮 Game Night with Friends
+Description: Set up multiplayer gaming on the console and invite friends for snacks and fun.
+
+Title: 💡 Brainstorm Startup Ideas
+Description: Spend an hour writing potential app ideas and market opportunities for 2025.
+
+Title: 🦷 Dentist Appointment
+Description: Visit Dr. Kapoor for routine dental cleaning and checkup.
+
+Title: 🏀 Basketball Practice
+Description: Meet the team at the sports complex for a 2-hour basketball training session.
+
+Title: ✈️ Book Tickets for Goa Trip
+Description: Compare flight prices and book round-trip tickets for the upcoming friends’ vacation.
 
 i want to make agentic ai todo app
 

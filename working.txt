@@ -1,0 +1,343 @@
+agent.py file
+
+import os
+import json
+from typing import TypedDict, Annotated, Optional, List
+from datetime import datetime
+
+# --- 3rd Party Imports ---
+from sqlalchemy.orm import Session
+from pydantic import BaseModel, Field
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.tools import tool
+from langchain_core.messages import BaseMessage, HumanMessage
+from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import ToolNode
+
+# --- Local Imports ---
+from . import crud, database, models
+from .websocket_manager import manager
+
+
+# ==============================================================================
+# 1. TOOL DEFINITIONS
+# ==============================================================================
+
+# --- Schemas for Tool Arguments ---
+class CreateTodoArgs(BaseModel):
+    title: str = Field(description="The title of the to-do item.")
+    description: Optional[str] = Field(default=None, description="An optional description for the to-do item.")
+
+class UpdateTodoArgs(BaseModel):
+    todo_id: int = Field(description="The ID of the to-do item to update.")
+    new_title: Optional[str] = Field(default=None, description="The new title for the to-do.")
+    new_description: Optional[str] = Field(default=None, description="The new description for the to-do.")
+    completed: Optional[bool] = Field(default=None, description="The new completion status of the to-do.")
+
+class DeleteMultipleTodosArgs(BaseModel):
+    todo_ids: List[int] = Field(description="A list of specific to-do IDs to delete.")
+
+class SemanticSearchArgs(BaseModel):
+    query: str = Field(description="The semantic query to search for in the to-do list.")
+    limit: int = Field(default=20, description="Maximum number of results to return. Default is 20.")
+
+class PerformUIActionArgs(BaseModel):
+    action: str = Field(description="The UI action to perform (e.g., 'navigate', 'set_theme').")
+    payload: str = Field(description="The data for the action (e.g., '/settings', 'theme-solar').")
+
+class DeleteAllArgs(BaseModel):
+    """An empty schema for the delete_all_todos tool, as it takes no arguments."""
+    pass
+
+# --- Internal Broadcast Tool ---
+async def _broadcast_command(command: dict):
+    """Helper function to broadcast a JSON command via WebSocket."""
+    if isinstance(command, dict) and "type" in command:
+        print(f"Broadcasting command via WebSocket: {command}")
+        await manager.broadcast(json.dumps(command))
+    return "Broadcast successful."
+
+
+# --- Tools Exposed to the LLM ---
+# Note: Tools performing standard SQLAlchemy operations are synchronous (`def`)
+# to ensure compatibility and prevent race conditions within LangGraph.
+
+@tool(args_schema=CreateTodoArgs)
+def create_todo(title: str, description: Optional[str] = None) -> str:
+    """Creates a new to-do item."""
+    db: Session = next(database.get_db())
+    todo = crud.create_new_todo(db, title=title, description=description)
+    return f"Successfully created to-do with ID {todo.id} and title '{todo.title}'."
+
+@tool(args_schema=UpdateTodoArgs)
+def update_todo(todo_id: int, new_title: Optional[str] = None, new_description: Optional[str] = None, completed: Optional[bool] = None) -> str:
+    """Updates an existing to-do item."""
+    db: Session = next(database.get_db())
+    todo = crud.update_existing_todo(db, todo_id=todo_id, title=new_title, description=new_description, completed=completed)
+    if not todo:
+        return f"Error: To-do with ID {todo_id} not found."
+    return f"Successfully updated to-do with ID {todo.id}."
+
+@tool(args_schema=DeleteMultipleTodosArgs)
+def delete_multiple_todos(todo_ids: List[int]) -> str:
+    """Deletes multiple to-do items at once using a specific list of their IDs."""
+    if not isinstance(todo_ids, list) or not todo_ids:
+        return "Error: A list of to-do IDs must be provided."
+    db: Session = next(database.get_db())
+    num_deleted = crud.delete_multiple_todos_by_ids(db, todo_ids=todo_ids)
+    if num_deleted > 0:
+        return f"Successfully deleted {num_deleted} to-do item(s)."
+    return "No to-do items were found with the given IDs, so nothing was deleted."
+
+@tool(args_schema=SemanticSearchArgs)
+def semantic_search_todos(query: str, limit: int = 20) -> str:
+    """Finds to-do items semantically similar to a query. Use for searching, listing, or before modifying tasks by topic."""
+    db: Session = next(database.get_db())
+    query_embedding = crud.get_embedding_for_text(query)
+    results = db.query(models.Todo).order_by(models.Todo.embedding.cosine_distance(query_embedding)).limit(limit).all()
+    if not results:
+        return "No potentially relevant to-do items were found."
+    return json.dumps([
+        {"id": t.id, "title": t.title, "description": t.description, "completed": t.completed} 
+        for t in results
+    ])
+
+@tool(args_schema=DeleteAllArgs)
+def delete_all_todos() -> str:
+    """Deletes ALL to-do items. This is a highly destructive action and requires explicit user confirmation first."""
+    db: Session = next(database.get_db())
+    num_deleted = crud.delete_all_todos(db)
+    return f"Successfully deleted all {num_deleted} to-do item(s)."
+
+# This tool remains async because it calls an `await`-able function.
+@tool(args_schema=PerformUIActionArgs)
+async def perform_ui_action(action: str, payload: str) -> str:
+    """Performs a specific action on the frontend UI, such as navigation or changing settings."""
+    command = {"type": "ui_action", "action": action, "payload": payload}
+    await _broadcast_command(command)
+    return f"UI action '{action}' with payload '{payload}' was successfully dispatched."
+
+@tool
+def get_current_datetime() -> str:
+    """Returns the current date and time."""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+# ==============================================================================
+# 2. LANGGRAPH AGENT SETUP
+# ==============================================================================
+
+tools = [
+    create_todo,
+    update_todo,
+    delete_multiple_todos,
+    semantic_search_todos,
+    perform_ui_action,
+    get_current_datetime,
+    delete_all_todos
+]
+tool_node = ToolNode(tools)
+
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.1)
+llm_with_tools = llm.bind_tools(tools)
+
+class AgentState(TypedDict):
+    messages: Annotated[list[BaseMessage], lambda x, y: x + y]
+
+UI_AWARENESS_PROMPT = """
+You are a helpful and intelligent AI assistant for a to-do app.
+Your primary goal is to accurately and safely help users manage their to-do list.
+
+**CRITICAL REASONING FOR DELETION - YOU MUST FOLLOW THESE STEPS:**
+
+This is a multi-turn process. You must remember the context between user replies.
+
+**Scenario 1: User asks to delete a group of tasks (e.g., "delete my school tasks", "delete the goa, 5km, and book reading todos")**
+1.  **SEARCH:** Your FIRST action is to use the `semantic_search_todos` tool to find the relevant tasks.
+2.  **PROPOSE & CONFIRM:** Review the search results. Present a clear, numbered list of the tasks you found (with their IDs and Titles) to the user. Ask for their explicit confirmation. Example: "I found 3 tasks: [1. ID: 15, Title: 'Book Tickets for Goa Trip'], [2. ID: 9, Title: 'Marathon Training Session'], [3. ID: 5, Title: 'Finish "Deep Work" Book']. Are you sure you want to delete these 3 items?" Then, STOP and wait for the user's response.
+3.  **EXECUTE:** If the user responds with "yes", "confirm", or similar confirmation, your NEXT action is to call the `delete_multiple_todos` tool with the list of IDs you proposed. Example: `delete_multiple_todos(todo_ids=[15, 9, 5])`.
+
+**Scenario 2: User asks to delete ALL tasks (e.g., "delete everything", "clear my list")**
+1.  **WARN & CONFIRM:** Your FIRST action is to issue a strong warning and ask for explicit confirmation. Example: "Warning: This will permanently delete all of your to-dos. Are you absolutely sure you want to proceed?" Then, STOP and wait for the user's response.
+2.  **EXECUTE:** If the user responds with "yes, I'm sure" or similar confirmation, your NEXT action is to call the `delete_all_todos` tool.
+
+NEVER delete anything without first proposing a plan and getting confirmation from the user.
+
+**Search & Question Answering:**
+When a user asks "how many tasks are there?", use `semantic_search_todos` with a query like "all tasks" and a high limit, like `limit=100`, to get a complete list before answering.
+
+**UI Knowledge:**
+- **Pages:** Home ('/'), To-Do ('/todo'), About ('/about'), Settings ('/settings'). Use 'navigate' to go to them.
+- **Themes:** On the Settings page, use 'set_theme' with 'theme-cyber', 'theme-solar', etc.
+- **To-Do List UI:** Use 'open_edit_modal' with a to-do's ID to help the user edit.
+"""
+
+def should_continue(state: AgentState) -> str:
+    last_message = state['messages'][-1]
+    if not hasattr(last_message, "tool_calls") or not last_message.tool_calls:
+        return "end"
+    return "continue"
+
+def call_model(state: AgentState):
+    messages_with_awareness = [HumanMessage(content=UI_AWARENESS_PROMPT)] + state['messages']
+    response = llm_with_tools.invoke(messages_with_awareness)
+    return {"messages": [response]}
+
+workflow = StateGraph(AgentState)
+workflow.add_node("agent", call_model)
+workflow.add_node("action", tool_node)
+workflow.set_entry_point("agent")
+workflow.add_conditional_edges("agent", should_continue, {"continue": "action", "end": END})
+workflow.add_edge("action", "agent")
+
+memory = MemorySaver()
+app = workflow.compile(checkpointer=memory)
+
+
+# ==============================================================================
+# 3. API-FACING FUNCTION
+# ==============================================================================
+
+async def astream_agent_and_broadcast(inputs: dict, thread_id: str):
+    """
+    Streams the agent's final conversational response.
+    If a data-modifying tool was used, it broadcasts a data_update command.
+    """
+    config = {"configurable": {"thread_id": thread_id}}
+    was_modifying_tool_used = False
+    modifying_tools = {"create_todo", "update_todo", "delete_multiple_todos", "delete_all_todos"}
+
+    async for event in app.astream_events(inputs, config=config, version="v2"):
+        kind = event["event"]
+        
+        if kind == "on_tool_end":
+            if event["name"] in modifying_tools:
+                was_modifying_tool_used = True
+        
+        if kind == "on_chain_end" and event["name"] == "agent":
+            final_message = event["data"]["output"]["messages"][-1]
+            if final_message.content:
+                yield final_message.content
+    
+    if was_modifying_tool_used:
+        print("Modifying tool used, broadcasting 'data_update' message.")
+        update_command = {"type": "data_update", "payload": "todos_updated"}
+        await _broadcast_command(update_command)
+
+
+
+crud.py file
+
+import re
+from typing import List, Optional
+from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_genai._common import GoogleGenerativeAIError
+
+from . import models
+
+# --- Initialize the Embedding Model ---
+# This is a lightweight model specifically for creating text embeddings.
+embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+
+def get_embedding_for_text(text: str):
+    """Generates a vector embedding for a given piece of text, handling potential API errors."""
+    try:
+        return embeddings_model.embed_query(text)
+    except GoogleGenerativeAIError as e:
+        # If we hit a quota error or any other API error, log it and return None.
+        print(f"Could not generate embedding due to API error: {e}")
+        return None
+    except Exception as e:
+        # Catch any other unexpected errors.
+        print(f"An unexpected error occurred during embedding: {e}")
+        return None
+
+def create_new_todo(db: Session, title: str, description: str = None):
+    """Creates a new to-do and generates its vector embedding if possible."""
+    meaningful_text = title
+    if description:
+        meaningful_text += f". {description}"
+    
+    emoji_pattern = re.compile("[\U00010000-\U0001FFFF]", flags=re.UNICODE)
+    clean_text = emoji_pattern.sub(r'', meaningful_text)
+    
+    embedding = get_embedding_for_text(clean_text)
+    
+    db_todo = models.Todo(
+        title=title, 
+        description=description,
+        embedding=embedding
+    )
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)
+    return db_todo
+
+def update_existing_todo(db: Session, todo_id: int, title: str = None, description: str = None, completed: bool = None):
+    """Updates a to-do and regenerates its embedding if text changes and if possible."""
+    db_todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
+    if not db_todo:
+        return None
+    
+    text_changed = False
+    if title is not None:
+        db_todo.title = title
+        text_changed = True
+    if description is not None:
+        db_todo.description = description
+        text_changed = True
+    if completed is not None:
+        db_todo.completed = completed
+    
+    if text_changed:
+        meaningful_text = db_todo.title
+        if db_todo.description:
+            meaningful_text += f". {db_todo.description}"
+        
+        emoji_pattern = re.compile("[\U00010000-\U0001FFFF]", flags=re.UNICODE)
+        clean_text = emoji_pattern.sub(r'', meaningful_text)
+        
+        embedding = get_embedding_for_text(clean_text)
+        if embedding:
+            db_todo.embedding = embedding
+
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)
+    return db_todo
+
+def get_all_todos(db: Session):
+    """Retrieves all to-do items from the database."""
+    return db.query(models.Todo).all()
+
+def delete_multiple_todos_by_ids(db: Session, todo_ids: List[int]) -> int:
+    """Deletes multiple to-do items from the database based on a list of their IDs."""
+    num_deleted = db.query(models.Todo).filter(models.Todo.id.in_(todo_ids)).delete(synchronize_session=False)
+    db.commit()
+    return num_deleted
+
+def delete_all_todos(db: Session) -> int:
+    """Deletes all to-do items from the database. Returns the number of items deleted."""
+    num_deleted = db.query(models.Todo).delete()
+    db.commit()
+    return num_deleted
+
+def semantic_search_with_date_filter(db: Session, query: str, limit: int, days_ago: Optional[int] = None) -> List[models.Todo]:
+    """Performs a semantic search with an optional date filter."""
+    q = db.query(models.Todo)
+    
+    if days_ago is not None:
+        target_date = datetime.utcnow() - timedelta(days=days_ago)
+        q = q.filter(models.Todo.created_at >= target_date)
+
+    query_embedding = get_embedding_for_text(query)
+    if not query_embedding:
+        # If embedding fails, return an empty list or handle as needed
+        return []
+    
+    results = q.order_by(models.Todo.embedding.cosine_distance(query_embedding)).limit(limit).all()
+    return results

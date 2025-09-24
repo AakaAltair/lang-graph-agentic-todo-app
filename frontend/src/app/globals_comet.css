@@ -125,10 +125,7 @@ body::before {
 body {
   color: var(--text-primary);
   /* CRITICAL FIX: Add the quantum glow gradient to the main page background */
-  background: 
-    radial-gradient(rgba(0,0,0,0.15) 1px, transparent 0),
-    var(--fill-gradient);
-  background-size: 10px 10px, auto;
+  background: var(--fill-gradient);
   transition: background-color 0.5s ease;
 }
 

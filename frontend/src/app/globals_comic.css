@@ -12,14 +12,19 @@
 
 /* 
   RECOMMENDATION: For the full comic effect, import a font like "Bangers" 
-  from Google Fonts in your main layout file.
+  from Google Fonts in your main layout file (e.g., layout.js or _app.js).
   <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 */
 body {
+  /* A classic, bold comic font. Cursive and sans-serif are fallbacks. */
   font-family: "Bangers", "Comic Sans MS", cursive, sans-serif;
   letter-spacing: 1.5px;
 }
 
+/* 
+  This new pseudo-element creates the iconic halftone/polka dot background.
+  It sits behind all content and takes its color from the active theme.
+*/
 body::before {
   content: '';
   position: fixed;
@@ -29,11 +34,10 @@ body::before {
   height: 100vh;
   z-index: -1;
   background-image: radial-gradient(var(--halftone-color) 1.5px, transparent 0);
-  background-size: 25px 25px; /* Slightly larger dots */
-  opacity: 0.1;
+  background-size: 15px 15px;
+  opacity: 0.15;
   transition: background-color 0.5s ease;
 }
-
 
 /* 
   ==========================================================================
@@ -42,44 +46,44 @@ body::before {
 */
 :root {
   /* --- Core Layout & Colors --- */
-  --card-content-bg: #1e1e1e;
+  --background-color: #121212; /* This is the solid dark color behind the dots */
+  --card-content-bg: rgba(20, 20, 20, 0.7); /* Semi-transparent to see dots behind it */
   --shadow-color: #000000;
-  --text-primary: rgba(255, 255, 255, 0.9);
-  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.7);
   --text-heading: #ffffff;
   
-  /* --- Comic Style Vars --- */
-  --comic-border-color: #000000;
-  --comic-border-width: 4px;
+  /* --- NEW COMIC STYLE VARS --- */
+  --halftone-color: #FFFFFF; /* Color of the background polka dots */
+  --border-color: #000000;
 
   /* --- Sizing & Shape --- */
-  --border-radius-card: 22px; /* Slightly larger to accommodate the bigger border */
+  --border-radius-card: 16px; /* Less rounded for a panel look */
   --border-radius-btn: 50px;
-  /* CRITICAL FIX: Increased padding to make the comet trail visible */
-  --comet-padding: 8px; 
+  --border-size: 4px; /* Thicker, more defined borders */
   
   /* --- Animation --- */
-  --spin-duration: 3.5s; /* Slightly slower for a smoother feel */
+  --spin-duration: 3s;
   --spin-delay: 0s;
 
   /* --- THEME 1: "Cyberpunk" (Zur-En-Arrh) - Default --- */
-  --background-color: #120024;
-  --halftone-color: #ff00e5;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #ff00e5 5%, #ffea00, #ad00ff 45%, #f72585 50%, transparent 65%);
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ff00e5 0%, #ffea00 15%, #ad00ff 30%, transparent 40%);
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ffea00, #f72585, #ad00ff, #ff00e5, #ffea00);
-  --fill-gradient: radial-gradient(ellipse at bottom, #2a0e4a, #120024 80%);
+  --fill-gradient: radial-gradient(ellipse at bottom, #3b185f, #1e0c30 80%);
   --fill-gradient-hover: linear-gradient(135deg, #ad00ff, #f72585, #ffea00);
   --text-gradient: linear-gradient(90deg, #F72585, #ad00ff, #ffea00);
-  --card-text-glow-gradient: linear-gradient(135deg, #2a1538, #1e0c30, #2a1538);
+  --card-text-glow-gradient: linear-gradient(135deg, #2a1538, #0d1b3e, #2a1538);
+  --background-color: #2a0e4a;
+  --halftone-color: #f72585;
 }
 
 /* --- THEME 2: "Solar Flare" (Flash/Ironman) --- */
 :root.theme-solar {
-  --background-color: #1a0800;
+  --background-color: #4d0f00;
   --halftone-color: #ffd60a;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #fff000 5%, #ffd60a, #ffae03 45%, #d90429 50%, transparent 65%);
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #fff000 0%, #ffd60a 15%, #d90429 30%, transparent 40%);
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #fff000, #ffd60a, #ffae03, #d90429, #ff0000, #fff000);
-  --fill-gradient: radial-gradient(ellipse at bottom, #3d0c00, #1a0800 80%);
+  --fill-gradient: radial-gradient(ellipse at bottom, #6b1400, #3d0c00 80%);
   --fill-gradient-hover: linear-gradient(135deg, #d90429, #ffae03, #ffd60a);
   --text-gradient: linear-gradient(90deg, #fff000, #ffae03, #d90429);
   --card-text-glow-gradient: linear-gradient(135deg, #6b1400, #3d0c00, #6b1400);
@@ -87,11 +91,11 @@ body::before {
 
 /* --- THEME 3: "Emerald Matrix" (Green Lantern/Arrow) --- */
 :root.theme-matrix {
-  --background-color: #011508;
+  --background-color: #021d0a;
   --halftone-color: #70e000;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #a7c957 5%, #70e000, #52b788 45%, #2d6a4f 50%, transparent 65%);
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #a7c957 0%, #70e000 15%, #2d6a4f 30%, transparent 40%);
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #a7c957, #70e000, #52b788, #2d6a4f, #1b4332, #a7c957);
-  --fill-gradient: radial-gradient(ellipse at bottom, #142b23, #011508 80%);
+  --fill-gradient: radial-gradient(ellipse at bottom, #204436, #142b23 80%);
   --fill-gradient-hover: linear-gradient(135deg, #1b4332, #52b788, #a7c957);
   --text-gradient: linear-gradient(90deg, #a7c957, #52b788, #2d6a4f);
   --card-text-glow-gradient: linear-gradient(135deg, #142b23, #2d6a4f, #142b23);
@@ -99,11 +103,11 @@ body::before {
 
 /* --- THEME 4: "Oceanic Depth" (Superman/Nightwing) --- */
 :root.theme-oceanic {
-  --background-color: #010f1a;
+  --background-color: #031622;
   --halftone-color: #4cc9f0;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #ffd60a 5%, #d90429, #0077b6 45%, #03045e 50%, transparent 65%);
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffd60a 0%, #d90429 15%, #0077b6 30%, transparent 40%);
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ffd60a, #d90429, #0077b6, #4cc9f0, #03045e, #ffd60a);
-  --fill-gradient: radial-gradient(ellipse at bottom, #0d1b3e, #010f1a 80%);
+  --fill-gradient: radial-gradient(ellipse at bottom, #162d66, #0d1b3e 80%);
   --fill-gradient-hover: linear-gradient(135deg, #03045e, #d90429, #ffd60a);
   --text-gradient: linear-gradient(90deg, #caf0f8, #4cc9f0, #d90429);
   --card-text-glow-gradient: linear-gradient(135deg, #0d1b3e, #0077b6, #d90429);
@@ -113,22 +117,18 @@ body::before {
 :root.theme-mono {
   --background-color: #0a0a0a;
   --halftone-color: #cccccc;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #e0e0e0 5%, #b0b0b0, #808080 45%, #666666 50%, transparent 65%);
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #e0e0e0 0%, #b0b0b0 15%, #808080 30%, transparent 40%);
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ffffff, #dcdcdc, #b0b0b0, #808080, #666666, #ffffff);
   --fill-gradient: radial-gradient(ellipse at bottom, #2a2a2a, #111111 80%);
-  --fill-gradient-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(128, 128, 128, 0.15));
+  --fill-gradient-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(128, 128, 128, 0.25));
   --text-gradient: linear-gradient(90deg, #EAEAEA, #B0B0B0, #777777);
-  --card-text-glow-gradient: linear-gradient(45deg, rgba(255, 255, 255, 0.03), rgba(128, 128, 128, 0.05));
+  --card-text-glow-gradient: linear-gradient(45deg, rgba(255, 255, 255, 0.05), rgba(128, 128, 128, 0.08));
 }
 
 /* Base body and typography styles */
 body {
   color: var(--text-primary);
-  /* CRITICAL FIX: Add the quantum glow gradient to the main page background */
-  background: 
-    radial-gradient(rgba(0,0,0,0.15) 1px, transparent 0),
-    var(--fill-gradient);
-  background-size: 10px 10px, auto;
+  background: var(--background-color);
   transition: background-color 0.5s ease;
 }
 
@@ -136,7 +136,7 @@ h1, h2, h3 {
   font-weight: 900;
   color: var(--text-heading);
   text-transform: uppercase;
-  text-shadow: 2px 2px 0px var(--comic-border-color);
+  text-shadow: 2px 2px 0px var(--border-color); /* Comic text outline */
 }
 
 .gradient-text {
@@ -154,8 +154,8 @@ h1, h2, h3 {
   ==========================================================================
 */
 @keyframes spin {
-  from { rotate: 0deg; }
-  to   { rotate: 360deg; }
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 @keyframes background-pan {
@@ -171,15 +171,10 @@ h1, h2, h3 {
 .spinner-border {
   position: relative;
   overflow: hidden;
-  padding: var(--comet-padding); /* Use the new larger padding */
-  border: var(--comic-border-width) solid var(--comic-border-color);
+  padding: 0; /* No padding on the outer wrapper */
+  border: var(--border-size) solid var(--border-color); /* THICK COMIC BORDER */
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
   isolation: isolate;
-}
-
-.spinner-border:hover {
-  transform: translate(-5px, -5px);
-  box-shadow: 7px 7px 0px var(--shadow-color);
 }
 
 .spinner-border::before {
@@ -189,12 +184,10 @@ h1, h2, h3 {
   top: 50%;
   left: 50%;
   width: 300%;
-  padding-bottom: 300%;
+  aspect-ratio: 1;
   background: var(--spinner-gradient);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  translate: -50% -50%;
-  animation: spin var(--spin-duration) linear infinite;
+  transform-origin: center center;
+  animation: spin var(--spin-duration, 3s) ease-in-out var(--spin-delay, 0s) infinite;
   pointer-events: none;
 }
 
@@ -205,6 +198,7 @@ h1, h2, h3 {
   transition: background 0.5s ease;
   position: relative;
   z-index: 2;
+  padding: var(--border-size); /* Add padding inside to create space for the glow */
 }
 
 /* 
@@ -212,6 +206,12 @@ h1, h2, h3 {
   Part 3: The Layered Hover & Active States
   ==========================================================================
 */
+/* NEW: Hard-edged comic book shadow on hover */
+.spinner-border:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 6px 6px 0px var(--shadow-color);
+}
+
 .spinner-border:hover .spinner-content {
   background-image: var(--fill-gradient-hover);
   background-size: 200% 200%;
@@ -226,7 +226,7 @@ h1, h2, h3 {
 
 .spinner-border.is-active::before {
   background: var(--spinner-gradient-active); 
-  animation-duration: 2.5s;
+  animation-duration: 2s; /* Faster spin when active */
 }
 
 /* 
@@ -239,8 +239,7 @@ h1, h2, h3 {
   border-radius: var(--border-radius-btn);
 }
 .btn .spinner-content {
-  /* Corrected radius calculation */
-  border-radius: calc(var(--border-radius-btn) - var(--comet-padding));
+  border-radius: calc(var(--border-radius-btn) - var(--border-size));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -250,27 +249,29 @@ h1, h2, h3 {
   text-transform: uppercase;
 }
 
-/* --- Cards, Modals, ChatUI etc. --- */
+/* --- Cards & Modals --- */
 .card.spinner-border {
   border-radius: var(--border-radius-card);
 }
 .card .spinner-content {
-  /* Corrected radius calculation */
-  border-radius: calc(var(--border-radius-card) - var(--comet-padding));
+  border-radius: calc(var(--border-radius-card) - var(--border-size));
 }
-
 .card-text-content {
   background-color: var(--card-content-bg);
   padding: 1.5rem;
-  /* Corrected radius calculation */
-  border-radius: calc(var(--border-radius-card) - var(--comet-padding) - 4px);
+  border-radius: calc(var(--border-radius-card) - 10px);
   transition: background 0.5s ease;
+  border: 2px solid var(--border-color); /* Inner panel border */
+  
+  /* Polka dots for card interiors */
   background-image: radial-gradient(var(--halftone-color) 1px, transparent 0);
-  background-size: 15px 15px;
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px; /* Offset for a denser look */
 }
 
+/* Quantum Glow for inner content */
 .card:hover .card-text-content {
   background-image: var(--card-text-glow-gradient), radial-gradient(var(--halftone-color) 1px, transparent 0);
-  background-size: 200% 200%, 15px 15px;
+  background-size: 200% 200%, 12px 12px;
   animation: background-pan 4.5s ease-in-out infinite;
 }
