@@ -6,134 +6,94 @@
 
 /* 
   ==========================================================================
-  Part 0: The Comic Book Foundation
-  ==========================================================================
-*/
-
-/* 
-  RECOMMENDATION: For the full comic effect, import a font like "Bangers" 
-  from Google Fonts in your main layout file.
-  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
-*/
-body {
-  font-family: "Bangers", "Comic Sans MS", cursive, sans-serif;
-  letter-spacing: 1.5px;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  background-image: radial-gradient(var(--halftone-color) 1.5px, transparent 0);
-  background-size: 25px 25px; /* Slightly larger dots */
-  opacity: 0.1;
-  transition: background-color 0.5s ease;
-}
-
-
-/* 
-  ==========================================================================
   Part 1: The Absolute Foundation - CSS Variable Architecture
   ==========================================================================
 */
 :root {
   /* --- Core Layout & Colors --- */
+  --background-color: #121212;
   --card-content-bg: #1e1e1e;
-  --shadow-color: #000000;
-  --text-primary: rgba(255, 255, 255, 0.9);
-  --text-secondary: rgba(255, 255, 255, 0.65);
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
   --text-heading: #ffffff;
   
-  /* --- Comic Style Vars --- */
-  --comic-border-color: #000000;
-  --comic-border-width: 4px;
+  /* --- Default Theme: "Spectrum" --- */
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #f72585 5%, #b5179e, #7209b7, #4361ee 45%, #4cc9f0 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #f72585, #b5179e, #7209b7, #560bad, #480ca8, #3a0ca3, #4361ee, #4cc9f0, #f72585);
+  --fill-gradient: radial-gradient(ellipse at bottom, #2c2c30, #1a1a1d 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #3a0ca3, #f72585, #4cc9f0);
+  --text-gradient: linear-gradient(90deg, #F72585, #7209B7, #4361EE, #4CC9F0);
+  --card-text-glow-gradient: linear-gradient(135deg, #2a1538, #0d1b3e, #2a1538);
 
   /* --- Sizing & Shape --- */
-  --border-radius-card: 22px; /* Slightly larger to accommodate the bigger border */
+  --border-radius-card: 18px;
   --border-radius-btn: 50px;
-  /* CRITICAL FIX: Increased padding to make the comet trail visible */
-  --comet-padding: 8px; 
+  --border-size: 3px;
   
   /* --- Animation --- */
-  --spin-duration: 3.5s; /* Slightly slower for a smoother feel */
+  --spin-duration: 3s;
   --spin-delay: 0s;
-
-  /* --- THEME 1: "Cyberpunk" (Zur-En-Arrh) - Default --- */
-  --background-color: #120024;
-  --halftone-color: #ff00e5;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #ff00e5 5%, #ffea00, #ad00ff 45%, #f72585 50%, transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ffea00, #f72585, #ad00ff, #ff00e5, #ffea00);
-  --fill-gradient: radial-gradient(ellipse at bottom, #2a0e4a, #120024 80%);
-  --fill-gradient-hover: linear-gradient(135deg, #ad00ff, #f72585, #ffea00);
-  --text-gradient: linear-gradient(90deg, #F72585, #ad00ff, #ffea00);
-  --card-text-glow-gradient: linear-gradient(135deg, #2a1538, #1e0c30, #2a1538);
 }
 
-/* --- THEME 2: "Solar Flare" (Flash/Ironman) --- */
+/* --- THEME 2: "Solar Flare" --- */
 :root.theme-solar {
-  --background-color: #1a0800;
-  --halftone-color: #ffd60a;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #fff000 5%, #ffd60a, #ffae03 45%, #d90429 50%, transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #fff000, #ffd60a, #ffae03, #d90429, #ff0000, #fff000);
-  --fill-gradient: radial-gradient(ellipse at bottom, #3d0c00, #1a0800 80%);
-  --fill-gradient-hover: linear-gradient(135deg, #d90429, #ffae03, #ffd60a);
-  --text-gradient: linear-gradient(90deg, #fff000, #ffae03, #d90429);
-  --card-text-glow-gradient: linear-gradient(135deg, #6b1400, #3d0c00, #6b1400);
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #fff000 5%, #ffdb00, #ffc300 45%, #ffa500 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #fff000, #ffdb00, #ffc300, #ffa500, #ff8c00, #fff000);
+  --fill-gradient: radial-gradient(ellipse at bottom, #3d2a00, #221800 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #ff8c00, #ffc300, #fff000);
+  --text-gradient: linear-gradient(90deg, #fff000, #ffc300, #ff8c00);
+  --card-text-glow-gradient: linear-gradient(135deg, #3d2a00, #221800, #3d2a00);
+  --background-color: #221800;
 }
 
-/* --- THEME 3: "Emerald Matrix" (Green Lantern/Arrow) --- */
+/* --- THEME 3: "Emerald Matrix" --- */
 :root.theme-matrix {
-  --background-color: #011508;
-  --halftone-color: #70e000;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #a7c957 5%, #70e000, #52b788 45%, #2d6a4f 50%, transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #a7c957, #70e000, #52b788, #2d6a4f, #1b4332, #a7c957);
-  --fill-gradient: radial-gradient(ellipse at bottom, #142b23, #011508 80%);
-  --fill-gradient-hover: linear-gradient(135deg, #1b4332, #52b788, #a7c957);
-  --text-gradient: linear-gradient(90deg, #a7c957, #52b788, #2d6a4f);
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #d8f3dc 5%, #95d5b2, #52b788 45%, #2d6a4f 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #95d5b2, #74c69d, #52b788, #40916c, #2d6a4f, #1b4332, #95d5b2);
+  --fill-gradient: radial-gradient(ellipse at bottom, #204436, #142b23 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #1b4332, #52b788, #95d5b2);
+  --text-gradient: linear-gradient(90deg, #d8f3dc, #95d5b2, #52b788, #2d6a4f);
   --card-text-glow-gradient: linear-gradient(135deg, #142b23, #2d6a4f, #142b23);
+  --background-color: #021d0a;
 }
 
-/* --- THEME 4: "Oceanic Depth" (Superman/Nightwing) --- */
+/* --- THEME 4: "Oceanic Depth" --- */
 :root.theme-oceanic {
-  --background-color: #010f1a;
-  --halftone-color: #4cc9f0;
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #ffd60a 5%, #d90429, #0077b6 45%, #03045e 50%, transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ffd60a, #d90429, #0077b6, #4cc9f0, #03045e, #ffd60a);
-  --fill-gradient: radial-gradient(ellipse at bottom, #0d1b3e, #010f1a 80%);
-  --fill-gradient-hover: linear-gradient(135deg, #03045e, #d90429, #ffd60a);
-  --text-gradient: linear-gradient(90deg, #caf0f8, #4cc9f0, #d90429);
-  --card-text-glow-gradient: linear-gradient(135deg, #0d1b3e, #0077b6, #d90429);
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #caf0f8 5%, #90e0ef, #48cae4 45%, #0096c7 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ade8f4, #90e0ef, #48cae4, #00b4d8, #0096c7, #0077b6, #03045e, #ade8f4);
+  --fill-gradient: radial-gradient(ellipse at bottom, #162d66, #0d1b3e 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #03045e, #0077b6, #90e0ef);
+  --text-gradient: linear-gradient(90deg, #caf0f8, #90e0ef, #00b4d8, #0077b6);
+  --card-text-glow-gradient: linear-gradient(135deg, #0d1b3e, #0077b6, #0d1b3e);
+  --background-color: #031622;
 }
 
-/* --- THEME 5: "Monochrome" (Batman/Venom) --- */
+/* --- THEME 5: "Tungsten" --- */
 :root.theme-mono {
-  --background-color: #0a0a0a;
-  --halftone-color: #cccccc;
+  /* --- REFINED: Added bright comet head and soft fade-out tail --- */
   --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #e0e0e0 5%, #b0b0b0, #808080 45%, #666666 50%, transparent 65%);
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #ffffff, #dcdcdc, #b0b0b0, #808080, #666666, #ffffff);
   --fill-gradient: radial-gradient(ellipse at bottom, #2a2a2a, #111111 80%);
   --fill-gradient-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(128, 128, 128, 0.15));
   --text-gradient: linear-gradient(90deg, #EAEAEA, #B0B0B0, #777777);
   --card-text-glow-gradient: linear-gradient(45deg, rgba(255, 255, 255, 0.03), rgba(128, 128, 128, 0.05));
+  --background-color: #0a0a0a;
 }
 
 /* Base body and typography styles */
 body {
   color: var(--text-primary);
-  /* CRITICAL FIX: Add the quantum glow gradient to the main page background */
-  background: var(--fill-gradient);
+  background: var(--background-color);
   transition: background-color 0.5s ease;
 }
-
 h1, h2, h3 {
   font-weight: 900;
   color: var(--text-heading);
-  text-transform: uppercase;
-  text-shadow: 2px 2px 0px var(--comic-border-color);
 }
 
 .gradient-text {
@@ -168,15 +128,14 @@ h1, h2, h3 {
 .spinner-border {
   position: relative;
   overflow: hidden;
-  padding: var(--comet-padding); /* Use the new larger padding */
-  border: var(--comic-border-width) solid var(--comic-border-color);
+  padding: var(--border-size);
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-  isolation: isolate;
+  isolation: isolate; /* KEY FIX: Creates a new stacking context */
 }
 
 .spinner-border:hover {
-  transform: translate(-5px, -5px);
-  box-shadow: 7px 7px 0px var(--shadow-color);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px var(--shadow-color);
 }
 
 .spinner-border::before {
@@ -186,12 +145,17 @@ h1, h2, h3 {
   top: 50%;
   left: 50%;
   width: 300%;
-  padding-bottom: 300%;
+  padding-bottom: 300%; /* Using padding-bottom for aspect ratio is clever! Let's keep it. */
+  
+  /* --- THE CRITICAL FIXES --- */
   background: var(--spinner-gradient);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  translate: -50% -50%;
-  animation: spin var(--spin-duration) linear infinite;
+  background-repeat: no-repeat; /* FIX #1: Prevents the mirroring/doubling effect. */
+  background-size: 100% 100%;   /* FIX #2: Explicitly ensures the gradient fills the element just once. */
+
+  /* --- REFINED ANIMATION LOGIC --- */
+  translate: -50% -50%; /* Replaces the old 'transform' property for clarity. */
+  animation: spin var(--spin-duration) linear var(--spin-delay) infinite;
+
   pointer-events: none;
 }
 
@@ -200,8 +164,8 @@ h1, h2, h3 {
   width: 100%;
   height: 100%;
   transition: background 0.5s ease;
-  position: relative;
-  z-index: 2;
+  position: relative; /* RECOMMENDED: Ensure it can hold a z-index */
+  z-index: 2;         /* RECOMMENDED: Place it above the ::before pseudo-element */
 }
 
 /* 
@@ -215,6 +179,7 @@ h1, h2, h3 {
   animation: background-pan 3s ease-in-out infinite;
 }
 
+/* This applies to nav links or any element given 'is-active' class */
 .spinner-border.is-active .spinner-content {
   background-image: var(--fill-gradient-hover);
   background-size: 200% 200%;
@@ -223,7 +188,7 @@ h1, h2, h3 {
 
 .spinner-border.is-active::before {
   background: var(--spinner-gradient-active); 
-  animation-duration: 2.5s;
+  animation-duration: 5s; 
 }
 
 /* 
@@ -231,43 +196,24 @@ h1, h2, h3 {
   Part 4: Component-Specific Blueprints
   ==========================================================================
 */
-/* --- Buttons --- */
-.btn.spinner-border {
-  border-radius: var(--border-radius-btn);
+.card-text-content {
+  background-color: var(--card-content-bg);
+  padding: 1.5rem;
+  border-radius: calc(var(--border-radius-card) - 10px);
+  transition: background 0.5s ease;
 }
+
+.card:hover .card-text-content {
+  background-image: var(--card-text-glow-gradient);
+  background-size: 200% 200%;
+  animation: background-pan 4.5s ease-in-out infinite;
+}
+
 .btn .spinner-content {
-  /* Corrected radius calculation */
-  border-radius: calc(var(--border-radius-btn) - var(--comet-padding));
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0.75rem 1.5rem;
   font-weight: 700;
   text-align: center;
-  text-transform: uppercase;
-}
-
-/* --- Cards, Modals, ChatUI etc. --- */
-.card.spinner-border {
-  border-radius: var(--border-radius-card);
-}
-.card .spinner-content {
-  /* Corrected radius calculation */
-  border-radius: calc(var(--border-radius-card) - var(--comet-padding));
-}
-
-.card-text-content {
-  background-color: var(--card-content-bg);
-  padding: 1.5rem;
-  /* Corrected radius calculation */
-  border-radius: calc(var(--border-radius-card) - var(--comet-padding) - 4px);
-  transition: background 0.5s ease;
-  background-image: radial-gradient(var(--halftone-color) 1px, transparent 0);
-  background-size: 15px 15px;
-}
-
-.card:hover .card-text-content {
-  background-image: var(--card-text-glow-gradient), radial-gradient(var(--halftone-color) 1px, transparent 0);
-  background-size: 200% 200%, 15px 15px;
-  animation: background-pan 4.5s ease-in-out infinite;
 }
