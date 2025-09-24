@@ -109,6 +109,22 @@ def delete_all_todos(db: Session) -> int:
     db.commit()
     return num_deleted
 
+def delete_existing_todo(db: Session, todo_id: int):
+    """Deletes a single to-do item from the database by its ID."""
+    # Find the specific to-do item
+    db_todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
+    
+    # If it doesn't exist, we can't delete it.
+    if not db_todo:
+        return None
+        
+    # If found, delete it and commit the change.
+    db.delete(db_todo)
+    db.commit()
+    
+    # Return the deleted object so the API can confirm what was deleted.
+    return db_todo
+    
 def semantic_search_with_date_filter(db: Session, query: str, limit: int, days_ago: Optional[int] = None) -> List[models.Todo]:
     """Performs a semantic search with an optional date filter."""
     # This function is not used by the main list view, so no changes are needed here.
