@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/store/themeStore';
 import { create } from 'zustand';
 
-// --- NEW: Import the global filter store ---
+// --- Import the global filter store ---
 import { useFilterStore } from '@/store/filterStore';
 
 // --- Global Zustand store for Modal Control ---
@@ -28,8 +28,14 @@ const WebSocketManager = () => {
   const { setTheme } = useThemeStore();
   const { setEditingTodoId } = useModalStore();
   
-  // --- NEW: Get the setter functions from the filter store ---
-  const { setStatusFilter, setDateFilter, setOrderBy, setOrderDir } = useFilterStore();
+  // --- Get the setter functions from the filter store ---
+  const { 
+    setStatusFilter, 
+    setDateFilter, 
+    setOrderBy, 
+    setOrderDir,
+    setSpotlightIds // <-- Get the new setter for the spotlight
+  } = useFilterStore();
 
   useEffect(() => {
     // This effect runs once when the component mounts to establish the connection.
@@ -79,7 +85,7 @@ const WebSocketManager = () => {
                     }
                     break;
                 
-                // --- NEW CASES TO HANDLE FILTER COMMANDS ---
+                // Cases to handle standard filter commands
                 case 'set_status_filter':
                     console.log(`EXECUTING status filter change to: ${message.payload}`);
                     setStatusFilter(message.payload);
@@ -95,6 +101,25 @@ const WebSocketManager = () => {
                 case 'set_order_dir':
                     console.log(`EXECUTING order_dir change to: ${message.payload}`);
                     setOrderDir(message.payload);
+                    break;
+                
+                // --- NEW CASE TO HANDLE THE SPOTLIGHT BY IDs ---
+                case 'spotlight_todos_by_id':
+                    console.log(`EXECUTING spotlight with IDs: "${message.payload}"`);
+                    try {
+                      // The payload is a stringified JSON array, e.g., "[5, 9, 12]"
+                      const ids = JSON.parse(message.payload);
+                      // Check if it's an array and not empty
+                      if (Array.isArray(ids) && ids.length > 0) {
+                        setSpotlightIds(ids);
+                      } else {
+                        // If the payload is '[]' or invalid, clear the spotlight.
+                        setSpotlightIds(null);
+                      }
+                    } catch (e) {
+                      console.error("Failed to parse spotlight IDs payload:", e);
+                      setSpotlightIds(null); // Clear spotlight on error
+                    }
                     break;
                 
                 default:
@@ -120,8 +145,8 @@ const WebSocketManager = () => {
       ws.close();
     };
 
-    // --- NEW: Add the new filter setters to the dependency array ---
-    // This ensures the useEffect hook has access to the latest versions of these functions.
+    // --- Add the new filter setter to the dependency array ---
+    // This ensures the useEffect hook has access to the latest version of the function.
   }, [
     queryClient, 
     router, 
@@ -130,7 +155,8 @@ const WebSocketManager = () => {
     setStatusFilter,
     setDateFilter,
     setOrderBy,
-    setOrderDir
+    setOrderDir,
+    setSpotlightIds // <-- NEW DEPENDENCY
   ]);
 
   return null;

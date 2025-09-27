@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
+from pydantic import BaseModel
 
 # Note the relative imports - we are one level deeper now
 from .. import crud, schemas
@@ -86,3 +87,15 @@ def delete_todo_endpoint(todo_id: int, db: Session = Depends(get_db)):
     if db_todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
     return db_todo
+
+class SemanticSearchRequest(BaseModel):
+    query: str
+    limit: int = 20
+
+@router.post("/semantic-search", response_model=List[schemas.Todo])
+def semantic_search_endpoint(request: SemanticSearchRequest, db: Session = Depends(get_db)):
+    """
+    Performs a semantic search and returns the full to-do objects.
+    """
+    results = crud.semantic_search_with_date_filter(db, query=request.query, limit=request.limit)
+    return results

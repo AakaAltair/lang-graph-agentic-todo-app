@@ -41,7 +41,17 @@ Compare flight prices and book round-trip tickets for the upcoming friends’ va
 ]
 
 
-Sample create Todos
+Sample crea Startup Ideas
+Description: Spend an hour writing potential app ideas and market opportunities for 2025.
+
+Title: 🦷 Dentist Appointment
+Description: Visit Dr. Kapoor for routine dental cleaning and checkup.
+
+Title: 🏀 Basketball Practice
+Description: Meet the team at the sports complex for a 2-hour basketball training session.
+
+Title: ✈️ Book Tickets for Goa Trip
+Description: Compare flight prices and book round-trip tickets for the upcoming friends’ vacation.te Todos
 
 Title: 🎂 Plan Birthday Surprise for Sarah
 Description: Buy a cake, decorations, and a small gift for Sarah’s birthday party on Saturday evening.
@@ -76,17 +86,7 @@ Description: Try a new pasta recipe and prepare a warm family dinner on Friday n
 Title: 🎮 Game Night with Friends
 Description: Set up multiplayer gaming on the console and invite friends for snacks and fun.
 
-Title: 💡 Brainstorm Startup Ideas
-Description: Spend an hour writing potential app ideas and market opportunities for 2025.
-
-Title: 🦷 Dentist Appointment
-Description: Visit Dr. Kapoor for routine dental cleaning and checkup.
-
-Title: 🏀 Basketball Practice
-Description: Meet the team at the sports complex for a 2-hour basketball training session.
-
-Title: ✈️ Book Tickets for Goa Trip
-Description: Compare flight prices and book round-trip tickets for the upcoming friends’ vacation.
+Title: 💡 Brainstorm
 
 i want to make agentic ai todo app
 

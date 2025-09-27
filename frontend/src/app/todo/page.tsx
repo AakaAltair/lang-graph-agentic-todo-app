@@ -1,21 +1,19 @@
 "use client";
 
-// --- FIX 1: Import useCallback from React ---
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { XCircle } from 'lucide-react';
 
 // --- Local Component Imports ---
-import { getTodos, createTodo, updateTodo } from '@/services/api';
+import { getTodos, createTodo, updateTodo } from '@/services/api'; 
 import { Todo } from '@/types';
 import SpinnerButton from '@/components/SpinnerButton';
 import TodoItem from '@/components/TodoItem';
 import Modal from '@/components/Modal';
 import TodoForm, { TodoFormData } from '@/components/TodoForm';
 import { useModalStore } from '@/components/WebSocketManager';
-
-// --- Zustand Store Import for Global Filter State ---
 import { useFilterStore } from '@/store/filterStore';
-import type { StatusFilter, DateFilter, OrderBy, OrderDirection } from '@/store/filterStore';
+import type { OrderBy, OrderDirection } from '@/store/filterStore';
 
 // --- Helper Components ---
 const FilterButton: React.FC<{
@@ -23,6 +21,7 @@ const FilterButton: React.FC<{
   isActive: boolean;
   children: React.ReactNode;
 }> = ({ onClick, isActive, children }) => {
+  // This custom button component is well-designed. No changes needed.
   if (isActive) {
     return (
       <div className="p-[3px]">
@@ -44,6 +43,7 @@ const FilterButton: React.FC<{
   );
 };
 
+
 // --- Main Page Component ---
 
 export default function TodoPage() {
@@ -52,38 +52,48 @@ export default function TodoPage() {
     statusFilter, setStatusFilter,
     dateFilter, setDateFilter,
     orderBy, setOrderBy,
-    orderDir, setOrderDir
+    orderDir, setOrderDir,
+    spotlightIds, setSpotlightIds // <-- Switched from semanticQuery to spotlightIds
   } = useFilterStore();
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-
+  
   const queryClient = useQueryClient();
 
-  // --- DATA FETCHING ---
-  const { data: todos, isLoading, isError } = useQuery<Todo[]>({
+  // --- DATA FETCHING (SIMPLIFIED) ---
+  // We now only need ONE query. It fetches ALL the data, sorted as requested.
+  // The filtering, including the new spotlight, is done on the client side.
+  const { data: allTodos, isLoading, isError } = useQuery<Todo[]>({
     queryKey: ['todos', orderBy, orderDir],
     queryFn: () => getTodos({ orderBy, orderDir }),
+    // This query always runs, ensuring we have the full dataset available for filtering.
   });
 
-  // --- DATA FILTERING (Client-side) ---
+  // --- DATA FILTERING (Client-side, now includes Spotlight) ---
   const filteredTodos = useMemo(() => {
-    if (!todos) return [];
+    if (!allTodos) return [];
     
-    let statusFiltered = todos;
-    if (statusFilter === 'active') {
-      statusFiltered = todos.filter(todo => !todo.completed);
-    } else if (statusFilter === 'completed') {
-      statusFiltered = todos.filter(todo => todo.completed);
+    // **CRITICAL CHANGE**: If a spotlight is active, it takes absolute precedence.
+    if (spotlightIds) {
+      const spotlightSet = new Set(spotlightIds);
+      return allTodos.filter(todo => spotlightSet.has(todo.id));
     }
 
+    // If no spotlight is active, proceed with the normal manual filters.
+    let statusFiltered = allTodos;
+    if (statusFilter === 'active') {
+      statusFiltered = allTodos.filter(todo => !todo.completed);
+    } else if (statusFilter === 'completed') {
+      statusFiltered = allTodos.filter(todo => todo.completed);
+    }
+    
     if (dateFilter === 'all') return statusFiltered;
     
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
     let startRange: Date | null = null;
     let endRange: Date | null = null;
 
@@ -112,10 +122,10 @@ export default function TodoPage() {
       if (endRange && todoDate >= endRange) return false;
       return true;
     });
+  }, [allTodos, spotlightIds, statusFilter, dateFilter, startDate, endDate]);
 
-  }, [todos, statusFilter, dateFilter, startDate, endDate]);
 
-  // --- DATA MUTATIONS & MODAL LOGIC ---
+  // --- DATA MUTATIONS & MODAL LOGIC (No changes needed here) ---
   const onMutationSuccess = () => { queryClient.invalidateQueries({ queryKey: ['todos'] }); setIsModalOpen(false); };
   const createMutation = useMutation({ mutationFn: createTodo, onSuccess: onMutationSuccess });
   const updateMutation = useMutation({ mutationFn: updateTodo, onSuccess: onMutationSuccess });
@@ -126,13 +136,13 @@ export default function TodoPage() {
 
   useEffect(() => {
     if (editingTodoId !== null) {
-      const todoToEdit = todos?.find(t => t.id === editingTodoId);
+      const todoToEdit = allTodos?.find(t => t.id === editingTodoId);
       if (todoToEdit) {
         handleOpenEditModal(todoToEdit);
       }
       setEditingTodoId(null);
     }
-  }, [editingTodoId, todos, setEditingTodoId, handleOpenEditModal]);
+  }, [editingTodoId, allTodos, setEditingTodoId, handleOpenEditModal]);
   
   const handleFormSubmit = (formData: TodoFormData) => {
     if (editingTodo) {
@@ -142,7 +152,8 @@ export default function TodoPage() {
     }
   };
 
-  // --- ANIMATION SYNC LOGIC ---
+
+  // --- ANIMATION SYNC LOGIC (No changes needed here) ---
   useEffect(() => {
     const spinners = document.querySelectorAll('.todo-grid .spinner-border, .filter-controls .spinner-border');
     spinners.forEach((spinner) => {
@@ -154,6 +165,7 @@ export default function TodoPage() {
     });
   }, [filteredTodos, statusFilter, dateFilter, orderBy, orderDir]);
 
+
   // --- RENDER ---
   return (
     <div className="flex flex-col items-center">
@@ -163,6 +175,21 @@ export default function TodoPage() {
       </div>
       
       <div className="w-full max-w-6xl mb-8 p-4 bg-black/20 rounded-lg flex flex-col gap-4 filter-controls">
+        {/* The Spotlight Banner now uses the `spotlightIds` state */}
+        {spotlightIds && (
+          <div className="flex items-center justify-center gap-2 p-3 bg-yellow-500/10 rounded-lg text-yellow-300 border border-yellow-500/20">
+            <span className="font-semibold text-sm">Semantic Spotlight Active</span>
+            <button 
+              onClick={() => setSpotlightIds(null)} 
+              className="ml-auto hover:text-white transition-colors flex items-center gap-1"
+              aria-label="Clear semantic filter"
+            >
+              <XCircle size={20} />
+              Clear
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold mr-2 text-white/80">Status:</span>
@@ -217,8 +244,12 @@ export default function TodoPage() {
         
         {!isLoading && filteredTodos.length === 0 && (
           <div className="text-center py-16">
-            <h3 className="text-xl font-semibold">No tasks found</h3>
-            <p className="text-[--text-secondary]">Try adjusting your filters or create a new task!</p>
+            <h3 className="text-xl font-semibold">
+              {spotlightIds ? "No tasks match the agent's search" : "No tasks found"}
+            </h3>
+            <p className="text-[--text-secondary]">
+              {spotlightIds ? "Try a different search query in the chat." : "Try adjusting your filters or create a new task!"}
+            </p>
           </div>
         )}
       </div>
@@ -228,7 +259,6 @@ export default function TodoPage() {
         onClose={() => setIsModalOpen(false)}
         title={editingTodo ? 'Edit Task' : 'Create New Task'}
       >
-        {/* --- FIX 2: Corrected function name --- */}
         <TodoForm 
           onSubmit={handleFormSubmit}
           initialData={editingTodo}

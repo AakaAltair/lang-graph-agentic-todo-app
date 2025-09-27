@@ -19,7 +19,7 @@ const Navbar = () => {
     <nav className="w-full p-4 sticky top-0 z-50 backdrop-blur-sm bg-black/20 border-b border-white/10">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="text-2xl font-black text-[--text-heading] hover:text-[--text-accent] transition-colors">
-          Agentic<span className="text-[--text-accent]">AI</span>
+          Lang Graph Agentic <span className="text-[--text-accent]">AI To-Do</span>
         </Link>
         
         {/* Map over the array to render the NavLink components */}

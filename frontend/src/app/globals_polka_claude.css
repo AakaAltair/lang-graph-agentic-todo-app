@@ -4,9 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
-
+/* 
+  ==========================================================================
+  Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
+  ==========================================================================
 */
 :root {
   /* --- Core Dark Theme Colors --- */
@@ -16,7 +17,7 @@ Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
   --text-primary: rgba(255, 255, 255, 0.9);
   --text-secondary: rgba(255, 255, 255, 0.65);
   --text-heading: #ffffff;
-
+  
   /* --- Dark Cyberpunk Theme Colors --- */
   --theme-dark-primary: #1a1a2e;
   --theme-dark-secondary: #16213e;
@@ -24,40 +25,40 @@ Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
   --theme-accent-primary: #ff3399;
   --theme-accent-secondary: #9933ff;
   --theme-accent-tertiary: #00ccff;
-
+  
   /* --- Default Theme: "Dark Cyberpunk Comic" --- */
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
-      var(--theme-accent-primary) 5%,
-      var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #6366f1 45%,
-      transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
-      var(--theme-accent-primary),
-      var(--theme-accent-secondary),
-      var(--theme-accent-tertiary),
-      #6366f1,
-      var(--theme-accent-primary));
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, 
+    #ffffff 0%, 
+    var(--theme-accent-primary) 5%, 
+    var(--theme-accent-secondary) 15%, 
+    var(--theme-accent-tertiary) 35%, 
+    #6366f1 45%, 
+    transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, 
+    var(--theme-accent-primary), 
+    var(--theme-accent-secondary), 
+    var(--theme-accent-tertiary), 
+    #6366f1, 
+    var(--theme-accent-primary));
   --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
-  --fill-gradient-hover: linear-gradient(135deg,
-      var(--theme-accent-secondary),
-      var(--theme-accent-primary),
-      var(--theme-accent-tertiary));
-  --text-gradient: linear-gradient(90deg,
-      var(--theme-accent-primary),
-      var(--theme-accent-secondary),
-      var(--theme-accent-tertiary));
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(255, 51, 153, 0.08),
-      rgba(153, 51, 255, 0.08),
-      rgba(0, 204, 255, 0.08));
+  --fill-gradient-hover: linear-gradient(135deg, 
+    var(--theme-accent-secondary), 
+    var(--theme-accent-primary), 
+    var(--theme-accent-tertiary));
+  --text-gradient: linear-gradient(90deg, 
+    var(--theme-accent-primary), 
+    var(--theme-accent-secondary), 
+    var(--theme-accent-tertiary));
+  --card-text-glow-gradient: linear-gradient(135deg, 
+    rgba(255, 51, 153, 0.08), 
+    rgba(153, 51, 255, 0.08), 
+    rgba(0, 204, 255, 0.08));
 
   /* --- Solid vibrant background polka dots (comic book style) --- */
   --bg-dot-color: #ff3399;
   --bg-dot-secondary: #9933ff;
   --bg-dot-tertiary: #00ccff;
-
+  
   /* --- More visible content dots for texture while maintaining readability --- */
   --content-dot-color: rgba(255, 255, 255, 0.08);
   --content-dot-hover: rgba(255, 255, 255, 0.12);
@@ -66,6 +67,14 @@ Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
   --border-radius-card: 18px;
   --border-radius-btn: 50px;
   --border-size: 3px;
+  
+  /* --- Desynchronized Animation Durations --- */
+  --spin-duration-1: 3s;
+  --spin-duration-2: 4.2s;
+  --spin-duration-3: 5.7s;
+  --spin-delay-1: 0s;
+  --spin-delay-2: 0.8s;
+  --spin-delay-3: 1.5s;
 }
 
 /* --- THEME 2: "Dark Solar" --- */
@@ -76,29 +85,29 @@ Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
   --theme-accent-primary: #ffcc00;
   --theme-accent-secondary: #ff8800;
   --theme-accent-tertiary: #ffaa00;
-
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
-      var(--theme-accent-primary) 5%,
-      var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #ff6600 45%,
-      transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
-      var(--theme-accent-primary),
-      var(--theme-accent-secondary),
-      var(--theme-accent-tertiary),
-      #ff6600,
-      var(--theme-accent-primary));
+  
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, 
+    #ffffff 0%, 
+    var(--theme-accent-primary) 5%, 
+    var(--theme-accent-secondary) 15%, 
+    var(--theme-accent-tertiary) 35%, 
+    #ff6600 45%, 
+    transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, 
+    var(--theme-accent-primary), 
+    var(--theme-accent-secondary), 
+    var(--theme-accent-tertiary), 
+    #ff6600, 
+    var(--theme-accent-primary));
   --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
   --fill-gradient-hover: linear-gradient(135deg, #ff6600, #ffaa00, #ffcc00);
   --text-gradient: linear-gradient(90deg, #ffcc00, #ff8800, #ff6600);
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(255, 204, 0, 0.08),
-      rgba(255, 136, 0, 0.08),
-      rgba(255, 102, 0, 0.08));
+  --card-text-glow-gradient: linear-gradient(135deg, 
+    rgba(255, 204, 0, 0.08), 
+    rgba(255, 136, 0, 0.08), 
+    rgba(255, 102, 0, 0.08));
   --background-color: #1a1300;
-
+  
   --bg-dot-color: #ffcc00;
   --bg-dot-secondary: #ff8800;
   --bg-dot-tertiary: #ff6600;
@@ -112,29 +121,29 @@ Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
   --theme-accent-primary: #00ccff;
   --theme-accent-secondary: #0088cc;
   --theme-accent-tertiary: #4dd0e1;
-
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
-      var(--theme-accent-primary) 5%,
-      var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #0077b6 45%,
-      transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
-      var(--theme-accent-primary),
-      var(--theme-accent-secondary),
-      var(--theme-accent-tertiary),
-      #0077b6,
-      var(--theme-accent-primary));
+  
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, 
+    #ffffff 0%, 
+    var(--theme-accent-primary) 5%, 
+    var(--theme-accent-secondary) 15%, 
+    var(--theme-accent-tertiary) 35%, 
+    #0077b6 45%, 
+    transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, 
+    var(--theme-accent-primary), 
+    var(--theme-accent-secondary), 
+    var(--theme-accent-tertiary), 
+    #0077b6, 
+    var(--theme-accent-primary));
   --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
   --fill-gradient-hover: linear-gradient(135deg, #0077b6, #0088cc, #00ccff);
   --text-gradient: linear-gradient(90deg, #00ccff, #0088cc, #0077b6);
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(0, 204, 255, 0.08),
-      rgba(0, 136, 204, 0.08),
-      rgba(0, 119, 182, 0.08));
+  --card-text-glow-gradient: linear-gradient(135deg, 
+    rgba(0, 204, 255, 0.08), 
+    rgba(0, 136, 204, 0.08), 
+    rgba(0, 119, 182, 0.08));
   --background-color: #031622;
-
+  
   --bg-dot-color: #00ccff;
   --bg-dot-secondary: #0088cc;
   --bg-dot-tertiary: #4dd0e1;
@@ -148,29 +157,29 @@ Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
   --theme-accent-primary: #00ff66;
   --theme-accent-secondary: #00cc52;
   --theme-accent-tertiary: #33ff77;
-
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
-      var(--theme-accent-primary) 5%,
-      var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #2d6a4f 45%,
-      transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
-      var(--theme-accent-primary),
-      var(--theme-accent-secondary),
-      var(--theme-accent-tertiary),
-      #2d6a4f,
-      var(--theme-accent-primary));
+  
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, 
+    #ffffff 0%, 
+    var(--theme-accent-primary) 5%, 
+    var(--theme-accent-secondary) 15%, 
+    var(--theme-accent-tertiary) 35%, 
+    #2d6a4f 45%, 
+    transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, 
+    var(--theme-accent-primary), 
+    var(--theme-accent-secondary), 
+    var(--theme-accent-tertiary), 
+    #2d6a4f, 
+    var(--theme-accent-primary));
   --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
   --fill-gradient-hover: linear-gradient(135deg, #2d6a4f, #00cc52, #00ff66);
   --text-gradient: linear-gradient(90deg, #00ff66, #00cc52, #2d6a4f);
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(0, 255, 102, 0.08),
-      rgba(0, 204, 82, 0.08),
-      rgba(45, 106, 79, 0.08));
+  --card-text-glow-gradient: linear-gradient(135deg, 
+    rgba(0, 255, 102, 0.08), 
+    rgba(0, 204, 82, 0.08), 
+    rgba(45, 106, 79, 0.08));
   --background-color: #021d0a;
-
+  
   --bg-dot-color: #00ff66;
   --bg-dot-secondary: #00cc52;
   --bg-dot-tertiary: #33ff77;
@@ -185,7 +194,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Enhanced structured polka dot background - Comic book style grid */
+/* Enhanced large solid polka dot background - comic book style */
 body::before {
   content: '';
   position: fixed;
@@ -194,23 +203,36 @@ body::before {
   width: 100%;
   height: 100%;
   z-index: -1;
-  /* CORRECTED: This syntax ensures a crisp, solid circle by making the transparent part start immediately after the colored part. */
-  background:
-    radial-gradient(var(--bg-dot-color) 2.5px, transparent 0),
-    radial-gradient(var(--bg-dot-secondary) 2.5px, transparent 0),
-    radial-gradient(var(--bg-dot-tertiary) 2.5px, transparent 0);
-  background-size: 60px 60px;
-  background-position:
+  background: 
+    /* Solid comic book dots - no gradients, just solid colors */
+    radial-gradient(circle at center, var(--bg-dot-color) 3px, transparent 3px),
+    radial-gradient(circle at center, var(--bg-dot-secondary) 2.5px, transparent 2.5px),
+    radial-gradient(circle at center, var(--bg-dot-tertiary) 4px, transparent 4px);
+  
+  background-size: 
+    80px 80px,
+    120px 120px, 
+    160px 160px;
+  
+  background-position: 
     0 0,
-    20px 20px,
-    40px 40px;
+    40px 40px,
+    80px 80px;
+    
   opacity: 0.25;
+  animation: grid-float 25s linear infinite;
   pointer-events: none;
 }
 
-h1,
-h2,
-h3 {
+@keyframes grid-float {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-8px, -8px); }
+  50% { transform: translate(8px, 8px); }
+  75% { transform: translate(-5px, 8px); }
+  100% { transform: translate(0, 0); }
+}
+
+h1, h2, h3 {
   font-weight: 900;
   color: var(--text-heading);
   letter-spacing: 1px;
@@ -226,42 +248,34 @@ h3 {
   font-weight: 900;
 }
 
-/*
-Part 2: The Signature "Flowing Comet" Border - The Desynchronization Protocol
-
-This section has been refactored to support the Desynchronization Protocol.
-The animation is now controlled by CSS variables (--spin-duration, --spin-delay)
-which must be set dynamically on each .spinner-border element via JavaScript
-to achieve a non-uniform, desynchronized effect.
+/* 
+  ==========================================================================
+  Part 2: The Signature "Flowing Comet" Border Implementation with Desync
+  ==========================================================================
 */
-@keyframes spin {
-  from {
-    rotate: 0deg;
-  }
+@keyframes spin-1 {
+  from { rotate: 0deg; }
+  to   { rotate: 360deg; }
+}
 
-  to {
-    rotate: 360deg;
-  }
+@keyframes spin-2 {
+  from { rotate: 0deg; }
+  to   { rotate: -360deg; }
+}
+
+@keyframes spin-3 {
+  from { rotate: 45deg; }
+  to   { rotate: 405deg; }
 }
 
 @keyframes background-pan {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @keyframes text-shine {
-  to {
-    background-position: 200% center;
-  }
+  to { background-position: 200% center; }
 }
 
 .spinner-border {
@@ -272,6 +286,7 @@ to achieve a non-uniform, desynchronized effect.
   isolation: isolate;
 }
 
+/* Default spinner (spin-1) */
 .spinner-border::before {
   content: '';
   position: absolute;
@@ -280,16 +295,31 @@ to achieve a non-uniform, desynchronized effect.
   left: 50%;
   width: 300%;
   padding-bottom: 300%;
-  background:
-    radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    var(--spinner-gradient);
-  background-repeat: repeat, no-repeat;
-  background-size: 20px 20px, 100% 100%;
+  
+  background: var(--spinner-gradient);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
   translate: -50% -50%;
+  animation: spin-1 var(--spin-duration-1) linear var(--spin-delay-1) infinite;
   pointer-events: none;
-  /* --- DYNAMIC ANIMATION --- */
-  /* This animation is controlled by --spin-duration and --spin-delay, which are set by a script. */
-  animation: spin var(--spin-duration, 3s) ease-in-out var(--spin-delay, 0s) infinite;
+}
+
+/* Alternate spinner patterns for variety */
+.spinner-border:nth-child(2n)::before {
+  animation: spin-2 var(--spin-duration-2) ease-in-out var(--spin-delay-2) infinite;
+}
+
+.spinner-border:nth-child(3n)::before {
+  animation: spin-3 var(--spin-duration-3) linear var(--spin-delay-3) infinite;
+}
+
+.spinner-border:nth-child(5n)::before {
+  animation: spin-1 var(--spin-duration-1) ease-out var(--spin-delay-1) infinite reverse;
+}
+
+.spinner-border:nth-child(7n)::before {
+  animation: spin-2 var(--spin-duration-2) ease-in-out var(--spin-delay-2) infinite reverse;
 }
 
 .spinner-border:hover {
@@ -306,9 +336,10 @@ to achieve a non-uniform, desynchronized effect.
   z-index: 2;
 }
 
-/*
-Part 3: The Layered Hover & Active States
-
+/* 
+  ==========================================================================
+  Part 3: The Layered Hover & Active States
+  ==========================================================================
 */
 .spinner-border:hover .spinner-content {
   background-image: var(--fill-gradient-hover);
@@ -323,18 +354,14 @@ Part 3: The Layered Hover & Active States
 }
 
 .spinner-border.is-active::before {
-  background:
-    radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
-    var(--spinner-gradient-active);
-  background-size: 20px 20px, 100% 100%;
-  background-repeat: repeat, no-repeat;
-  animation-duration: 1.5s;
-  /* Speed up when active */
+  background: var(--spinner-gradient-active); 
+  animation-duration: 5s; 
 }
 
-/*
-Part 4: Component-Specific Blueprints with Grid Polka Dots
-
+/* 
+  ==========================================================================
+  Part 4: Component-Specific Blueprints with Grid Polka Dots
+  ==========================================================================
 */
 .card-text-content {
   background-color: var(--card-content-bg);
@@ -354,7 +381,7 @@ Part 4: Component-Specific Blueprints with Grid Polka Dots
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
+  background-image: 
     radial-gradient(circle at center, var(--content-dot-color) 0.8px, transparent 0.8px);
   background-size: 24px 24px;
   background-position: 0 0;
@@ -372,7 +399,7 @@ Part 4: Component-Specific Blueprints with Grid Polka Dots
 }
 
 .card:hover .card-text-content::before {
-  background-image:
+  background-image: 
     radial-gradient(circle at center, var(--content-dot-hover) 0.8px, transparent 0.8px);
   opacity: 1;
 }
@@ -396,7 +423,7 @@ Part 4: Component-Specific Blueprints with Grid Polka Dots
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
+  background-image: 
     radial-gradient(circle at center, var(--content-dot-color) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: 0 0;
@@ -424,7 +451,7 @@ Part 4: Component-Specific Blueprints with Grid Polka Dots
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
+  background-image: 
     radial-gradient(circle at center, var(--content-dot-color) 0.6px, transparent 0.6px);
   background-size: 16px 16px;
   background-position: 0 0;
@@ -436,13 +463,14 @@ Part 4: Component-Specific Blueprints with Grid Polka Dots
 
 .btn:hover .spinner-content::before {
   opacity: 1;
-  background-image:
+  background-image: 
     radial-gradient(circle at center, var(--content-dot-hover) 0.6px, transparent 0.6px);
 }
 
-/*
-Part 5: Form Elements and Inputs
-
+/* 
+  ==========================================================================
+  Part 5: Form Elements and Inputs
+  ==========================================================================
 */
 .form-input,
 .form-textarea,
@@ -465,7 +493,7 @@ Part 5: Form Elements and Inputs
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
+  background-image: 
     radial-gradient(circle at center, var(--content-dot-color) 0.5px, transparent 0.5px);
   background-size: 18px 18px;
   background-position: 0 0;
@@ -483,9 +511,10 @@ Part 5: Form Elements and Inputs
   box-shadow: 0 0 0 2px rgba(255, 51, 153, 0.2);
 }
 
-/*
-Part 6: Navigation and Interactive Elements
-
+/* 
+  ==========================================================================
+  Part 6: Navigation and Interactive Elements
+  ==========================================================================
 */
 .nav-item {
   position: relative;
@@ -551,28 +580,23 @@ Part 6: Navigation and Interactive Elements
   .spinner-border {
     --border-size: 2px;
   }
-
+  
   .card-text-content {
     padding: 1rem;
   }
-
+  
   .btn .spinner-content {
     padding: 0.5rem 1rem;
   }
-
+  
   body::before {
-    background-size: 45px 45px;
-    /* Make the grid denser on smaller screens */
-    background-position:
-      0 0,
-      15px 15px,
-      30px 30px;
+    background-size: 60px 60px, 90px 90px, 120px 120px;
   }
-
+  
   .card-text-content::before {
     background-size: 20px 20px;
   }
-
+  
   .modal-content::before,
   .dialog-content::before {
     background-size: 16px 16px;
