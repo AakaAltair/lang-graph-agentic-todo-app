@@ -3,15 +3,14 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useThemeStore } from '@/store/themeStore';
 import { create } from 'zustand';
 
-// --- Import the global filter store ---
-import { useFilterStore } from '@/store/filterStore';
+// --- Import Global Stores ---
+import { useThemeStore } from '@/store/themeStore';
+import { useFilterStore, SpotlightInfo } from '@/store/filterStore';
 
 // --- Global Zustand store for Modal Control ---
 // This allows any component (like our WebSocketManager) to request that the modal be opened.
-// The TodoPage component will listen to this store and react accordingly.
 interface ModalState {
   editingTodoId: number | null;
   setEditingTodoId: (id: number | null) => void;
@@ -28,13 +27,15 @@ const WebSocketManager = () => {
   const { setTheme } = useThemeStore();
   const { setEditingTodoId } = useModalStore();
   
-  // --- Get the setter functions from the filter store ---
+  // --- Get all setter functions from the filter store ---
   const { 
     setStatusFilter, 
     setDateFilter, 
     setOrderBy, 
     setOrderDir,
-    setSpotlightIds // <-- Get the new setter for the spotlight
+    setSpotlight,
+    setStartDate,
+    setEndDate
   } = useFilterStore();
 
   useEffect(() => {
@@ -49,7 +50,6 @@ const WebSocketManager = () => {
     const ws = new WebSocket(wsUrl);
 
     // --- WebSocket Event Handlers ---
-
     ws.onopen = () => {
       console.log('✅ WebSocket connection established.');
     };
@@ -62,8 +62,6 @@ const WebSocketManager = () => {
         console.log('PARSED WEBSOCKET COMMAND:', message);
 
         // --- Command Router ---
-        // This is where we interpret the commands from the backend agent.
-
         if (message.type === 'data_update' && message.payload === 'todos_updated') {
             console.log("EXECUTING data update: Invalidating 'todos' query.");
             queryClient.invalidateQueries({ queryKey: ['todos'] });
@@ -85,7 +83,7 @@ const WebSocketManager = () => {
                     }
                     break;
                 
-                // Cases to handle standard filter commands
+                // Cases for standard filter commands
                 case 'set_status_filter':
                     console.log(`EXECUTING status filter change to: ${message.payload}`);
                     setStatusFilter(message.payload);
@@ -103,23 +101,44 @@ const WebSocketManager = () => {
                     setOrderDir(message.payload);
                     break;
                 
-                // --- NEW CASE TO HANDLE THE SPOTLIGHT BY IDs ---
+                // Case for the rich spotlight object
                 case 'spotlight_todos_by_id':
-                    console.log(`EXECUTING spotlight with IDs: "${message.payload}"`);
-                    try {
-                      // The payload is a stringified JSON array, e.g., "[5, 9, 12]"
-                      const ids = JSON.parse(message.payload);
-                      // Check if it's an array and not empty
-                      if (Array.isArray(ids) && ids.length > 0) {
-                        setSpotlightIds(ids);
+                    console.log(`EXECUTING spotlight with payload:`, message.payload);
+                    
+                    // The payload from the agent for this action is already a JSON object string.
+                    const spotlightInfo: SpotlightInfo = JSON.parse(message.payload);
+                    
+                    if (spotlightInfo && Array.isArray(spotlightInfo.ids)) {
+                      if (spotlightInfo.ids.length > 0) {
+                        setSpotlight(spotlightInfo);
+                        // ** REFINEMENT **: When a spotlight is activated, reset manual
+                        // filters to prevent conflicts and ensure results are visible.
+                        console.log("Resetting manual filters for new spotlight view.");
+                        setStatusFilter('all');
+                        setDateFilter('all');
                       } else {
-                        // If the payload is '[]' or invalid, clear the spotlight.
-                        setSpotlightIds(null);
+                        // If the payload has an empty 'ids' list, clear the spotlight.
+                        setSpotlight(null);
                       }
-                    } catch (e) {
-                      console.error("Failed to parse spotlight IDs payload:", e);
-                      setSpotlightIds(null); // Clear spotlight on error
+                    } else {
+                      console.error("Invalid spotlight payload received:", message.payload);
+                      setSpotlight(null);
                     }
+                    break;
+
+                // --- THIS IS THE CORRECTED CASE ---
+                case 'set_custom_date_range':
+                    console.log(`EXECUTING custom date range with payload:`, message.payload);
+                    
+                    // The payload for this action is already a parsed object from the agent tool.
+                    const { startDate, endDate } = message.payload;
+                    
+                    // Update the state store with the dates received from the agent.
+                    if (startDate) setStartDate(startDate);
+                    if (endDate) setEndDate(endDate);
+                    
+                    // Automatically switch the active filter to 'custom' to show the date inputs on the UI.
+                    setDateFilter('custom');
                     break;
                 
                 default:
@@ -145,8 +164,6 @@ const WebSocketManager = () => {
       ws.close();
     };
 
-    // --- Add the new filter setter to the dependency array ---
-    // This ensures the useEffect hook has access to the latest version of the function.
   }, [
     queryClient, 
     router, 
@@ -156,10 +173,12 @@ const WebSocketManager = () => {
     setDateFilter,
     setOrderBy,
     setOrderDir,
-    setSpotlightIds // <-- NEW DEPENDENCY
+    setSpotlight,
+    setStartDate,
+    setEndDate
   ]);
 
-  return null;
+  return null; // This component renders nothing visible.
 };
 
 export default WebSocketManager;

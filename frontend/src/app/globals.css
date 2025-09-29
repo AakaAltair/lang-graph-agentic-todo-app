@@ -8,173 +8,304 @@
 Part 1: The Absolute Foundation - CSS Variable Architecture + Dark Comic Theme
 
 */
+/* --- THEME 1: "VIP Cyberpunk" Enhanced --- */
 :root {
-  /* --- Core Dark Theme Colors --- */
-  --background-color: #0a0a0f;
-  --card-content-bg: rgba(20, 25, 35, 0.95);
-  --shadow-color: rgba(0, 0, 0, 0.7);
-  --text-primary: rgba(255, 255, 255, 0.9);
-  --text-secondary: rgba(255, 255, 255, 0.65);
+  /* --- Core Layout & Colors --- */
+  --background-color: #121212;
+  --card-content-bg: #1e1e1e;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
   --text-heading: #ffffff;
-
-  /* --- Dark Cyberpunk Theme Colors --- */
-  --theme-dark-primary: #1a1a2e;
-  --theme-dark-secondary: #16213e;
-  --theme-dark-tertiary: #0f0f23;
-  --theme-accent-primary: #ff3399;
-  --theme-accent-secondary: #9933ff;
-  --theme-accent-tertiary: #00ccff;
-
-  /* --- Default Theme: "Dark Cyberpunk Comic" --- */
-  --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
-      var(--theme-accent-primary) 5%,
-      var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #6366f1 45%,
-      transparent 65%);
-  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
-      var(--theme-accent-primary),
-      var(--theme-accent-secondary),
-      var(--theme-accent-tertiary),
-      #6366f1,
-      var(--theme-accent-primary));
-  --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
-  --fill-gradient-hover: linear-gradient(135deg,
-      var(--theme-accent-secondary),
-      var(--theme-accent-primary),
-      var(--theme-accent-tertiary));
-  --text-gradient: linear-gradient(90deg,
-      var(--theme-accent-primary),
-      var(--theme-accent-secondary),
-      var(--theme-accent-tertiary));
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(255, 51, 153, 0.08),
-      rgba(153, 51, 255, 0.08),
-      rgba(0, 204, 255, 0.08));
-
-  /* --- Solid vibrant background polka dots (comic book style) --- */
-  --bg-dot-color: #ff3399;
-  --bg-dot-secondary: #9933ff;
-  --bg-dot-tertiary: #00ccff;
-
-  /* --- More visible content dots for texture while maintaining readability --- */
-  --content-dot-color: rgba(255, 255, 255, 0.08);
-  --content-dot-hover: rgba(255, 255, 255, 0.12);
+  
+  /* --- Default Theme: "Cyber Glow" (Spectrum) --- */
+  --halftone-color: rgba(247, 37, 133, 0.1); /* Faint pink dot */
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%, #ffffff 0%, #f72585 5%, #b5179e, #7209b7, #4361ee 45%, #4cc9f0 50%, transparent 65%);
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%, #f72585, #b5179e, #7209b7, #560bad, #480ca8, #3a0ca3, #4361ee, #4cc9f0, #f72585);
+  --fill-gradient: radial-gradient(ellipse at bottom, #2c2c30, #1a1a1d 80%);
+  --fill-gradient-hover: linear-gradient(135deg, #3a0ca3, #f72585, #4cc9f0);
+  --text-gradient: linear-gradient(90deg, #F72585, #7209B7, #4361EE, #4CC9F0);
+  --card-text-glow-gradient: linear-gradient(135deg, #2a1538, #0d1b3e, #2a1538);
 
   /* --- Sizing & Shape --- */
   --border-radius-card: 18px;
   --border-radius-btn: 50px;
   --border-size: 3px;
+  
+  /* --- Animation --- */
+  --spin-duration: 3s;
+  --spin-delay: 0s;
+  
+  /* --- COMIC THEME VARIABLES (defaults are empty) --- */
+  --comic-border-width: 0px;
+  --comic-border-color: transparent;
+  --heading-font: inherit;
+  
 }
 
-/* --- THEME 2: "Dark Solar" --- */
+
+/* --- THEME 2: "Solar Flare" --- */
 :root.theme-solar {
-  --theme-dark-primary: #2a1f00;
-  --theme-dark-secondary: #3d2a00;
-  --theme-dark-tertiary: #1f1600;
-  --theme-accent-primary: #ffcc00;
-  --theme-accent-secondary: #ff8800;
-  --theme-accent-tertiary: #ffaa00;
+  --theme-dark-primary: #1f1200;   /* Near black brown */
+  --theme-dark-secondary: #2a1800; /* Dark amber brown */
+  --theme-dark-tertiary: #331f00;  /* Deep burnt sienna */
+
+  /* Accents: dark → vibrant */
+  --theme-accent-primary: #ffcc00;   /* Bright Gold */
+  --theme-accent-secondary: #ff9900; /* Burnt Orange */
+  --theme-accent-tertiary: #ff6600;  /* Deep Orange */
+  --theme-accent-crimson: #cc3300;   /* Dark Crimson */
+  --theme-accent-amber: #ffb300;     /* Amber Gold */
+  --theme-accent-lemon: #ffd633;     /* Lemon Yellow */
 
   --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
+      #fff8e1 0%,                       /* Soft pale gold */
       var(--theme-accent-primary) 5%,
       var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #ff6600 45%,
-      transparent 65%);
+      var(--theme-accent-tertiary) 30%,
+      var(--theme-accent-crimson) 45%,
+      var(--theme-accent-amber) 55%,
+      transparent 70%);
+  
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
       var(--theme-accent-primary),
       var(--theme-accent-secondary),
       var(--theme-accent-tertiary),
-      #ff6600,
+      var(--theme-accent-crimson),
+      var(--theme-accent-amber),
       var(--theme-accent-primary));
-  --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
-  --fill-gradient-hover: linear-gradient(135deg, #ff6600, #ffaa00, #ffcc00);
-  --text-gradient: linear-gradient(90deg, #ffcc00, #ff8800, #ff6600);
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(255, 204, 0, 0.08),
-      rgba(255, 136, 0, 0.08),
-      rgba(255, 102, 0, 0.08));
-  --background-color: #1a1300;
 
-  --bg-dot-color: #ffcc00;
-  --bg-dot-secondary: #ff8800;
-  --bg-dot-tertiary: #ff6600;
+  --fill-gradient: radial-gradient(
+    ellipse at bottom,
+    var(--theme-dark-secondary),
+    var(--theme-dark-primary) 85%
+  );
+  
+  --fill-gradient-hover: linear-gradient(
+    135deg,
+    var(--theme-accent-crimson),
+    var(--theme-accent-secondary),
+    var(--theme-accent-primary)
+  );
+
+  --text-gradient: linear-gradient(
+    90deg,
+    var(--theme-accent-lemon),
+    var(--theme-accent-amber),
+    var(--theme-accent-crimson)
+  );
+
+  --card-text-glow-gradient: linear-gradient(
+    135deg,
+    rgba(255, 204, 0, 0.08),   /* Gold */
+    rgba(255, 136, 0, 0.08),   /* Burnt Orange */
+    rgba(204, 51, 0, 0.08)     /* Crimson */
+  );
+
+  --background-color: #1a1300; /* Deep brown / solar shadow */
+
+  /* Background dot patterns */
+  --bg-dot-color: var(--theme-accent-primary);    /* Bright Gold */
+  --bg-dot-secondary: var(--theme-accent-secondary); /* Burnt Orange */
+  --bg-dot-tertiary: var(--theme-accent-crimson);    /* Dark Crimson */
 }
 
-/* --- THEME 3: "Dark Ocean" --- */
+
+/* --- THEME 3: "Oceanic Depths" --- */
 :root.theme-oceanic {
-  --theme-dark-primary: #0a1a2a;
-  --theme-dark-secondary: #162d66;
-  --theme-dark-tertiary: #051220;
-  --theme-accent-primary: #00ccff;
-  --theme-accent-secondary: #0088cc;
-  --theme-accent-tertiary: #4dd0e1;
+  --theme-dark-primary: #03131f;   /* Near black deep ocean */
+  --theme-dark-secondary: #0a1f3a; /* Dark navy */
+  --theme-dark-tertiary: #051822;  /* Deep teal blue */
+
+  /* Accents: dark → vibrant blues */
+  --theme-accent-primary: #00ccff;   /* Neon cyan */
+  --theme-accent-secondary: #0099cc; /* Cobalt blue */
+  --theme-accent-tertiary: #4dd0e1;  /* Bright sky blue */
+  --theme-accent-deep: #006080;      /* Deep ocean teal */
+  --theme-accent-light: #66f0ff;     /* Electric aqua */
 
   --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
+      #e6f7ff 0%,                    /* Soft pale cyan */
       var(--theme-accent-primary) 5%,
       var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #0077b6 45%,
-      transparent 65%);
+      var(--theme-accent-tertiary) 30%,
+      var(--theme-accent-deep) 45%,
+      var(--theme-accent-light) 55%,
+      transparent 70%);
+  
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
       var(--theme-accent-primary),
       var(--theme-accent-secondary),
       var(--theme-accent-tertiary),
-      #0077b6,
+      var(--theme-accent-deep),
+      var(--theme-accent-light),
       var(--theme-accent-primary));
-  --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
-  --fill-gradient-hover: linear-gradient(135deg, #0077b6, #0088cc, #00ccff);
-  --text-gradient: linear-gradient(90deg, #00ccff, #0088cc, #0077b6);
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(0, 204, 255, 0.08),
-      rgba(0, 136, 204, 0.08),
-      rgba(0, 119, 182, 0.08));
-  --background-color: #031622;
 
-  --bg-dot-color: #00ccff;
-  --bg-dot-secondary: #0088cc;
-  --bg-dot-tertiary: #4dd0e1;
+  --fill-gradient: radial-gradient(
+    ellipse at bottom,
+    var(--theme-dark-secondary),
+    var(--theme-dark-primary) 85%
+  );
+  
+  --fill-gradient-hover: linear-gradient(
+    135deg,
+    var(--theme-accent-deep),
+    var(--theme-accent-secondary),
+    var(--theme-accent-primary)
+  );
+
+  --text-gradient: linear-gradient(
+    90deg,
+    var(--theme-accent-light),
+    var(--theme-accent-tertiary),
+    var(--theme-accent-deep)
+  );
+
+  --card-text-glow-gradient: linear-gradient(
+    135deg,
+    rgba(0, 204, 255, 0.08), /* Neon cyan */
+    rgba(0, 136, 204, 0.08), /* Cobalt */
+    rgba(0, 96, 128, 0.08)   /* Deep teal */
+  );
+
+  --background-color: #01111b; /* Deep, almost black ocean background */
+
+  /* Background dot patterns */
+  --bg-dot-color: var(--theme-accent-primary);   /* Neon cyan */
+  --bg-dot-secondary: var(--theme-accent-tertiary); /* Bright sky blue */
+  --bg-dot-tertiary: var(--theme-accent-deep);      /* Deep ocean teal */
 }
 
-/* --- THEME 4: "Dark Matrix" --- */
+
+/* --- THEME 4: "Emerald Nexus" --- */
 :root.theme-matrix {
-  --theme-dark-primary: #0a1f0a;
-  --theme-dark-secondary: #1a331a;
-  --theme-dark-tertiary: #051005;
-  --theme-accent-primary: #00ff66;
-  --theme-accent-secondary: #00cc52;
-  --theme-accent-tertiary: #33ff77;
+  --theme-dark-primary: #031308;   /* Near black green */
+  --theme-dark-secondary: #0a2a14; /* Forest green */
+  --theme-dark-tertiary: #154a28;  /* Dark seaweed green */
+
+  /* Accents: darkest jade → bright neon lime */
+  --theme-accent-primary: #00ff66;  /* Neon Lime Green */
+  --theme-accent-secondary: #32cd32; /* Lime/Leaf Green */
+  --theme-accent-tertiary: #7fff00; /* Lemon Green */
+  --theme-accent-emerald: #228b22;  /* Emerald */
+  --theme-accent-seaweed: #2e8b57;  /* Seaweed Green */
+  --theme-accent-jade: #00a86b;     /* Jade Green */
 
   --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
-      #ffffff 0%,
+      #e6ffe6 0%,                        /* Soft pale green */
       var(--theme-accent-primary) 5%,
       var(--theme-accent-secondary) 15%,
-      var(--theme-accent-tertiary) 35%,
-      #2d6a4f 45%,
-      transparent 65%);
+      var(--theme-accent-tertiary) 30%,
+      var(--theme-accent-seaweed) 45%,
+      var(--theme-accent-emerald) 55%,
+      transparent 70%);
+  
   --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
       var(--theme-accent-primary),
       var(--theme-accent-secondary),
       var(--theme-accent-tertiary),
-      #2d6a4f,
+      var(--theme-accent-jade),
       var(--theme-accent-primary));
-  --fill-gradient: radial-gradient(ellipse at bottom, var(--theme-dark-secondary), var(--theme-dark-primary) 80%);
-  --fill-gradient-hover: linear-gradient(135deg, #2d6a4f, #00cc52, #00ff66);
-  --text-gradient: linear-gradient(90deg, #00ff66, #00cc52, #2d6a4f);
-  --card-text-glow-gradient: linear-gradient(135deg,
-      rgba(0, 255, 102, 0.08),
-      rgba(0, 204, 82, 0.08),
-      rgba(45, 106, 79, 0.08));
-  --background-color: #021d0a;
 
-  --bg-dot-color: #00ff66;
-  --bg-dot-secondary: #00cc52;
-  --bg-dot-tertiary: #33ff77;
+  --fill-gradient: radial-gradient(
+    ellipse at bottom,
+    var(--theme-dark-secondary),
+    var(--theme-dark-primary) 85%
+  );
+  
+  --fill-gradient-hover: linear-gradient(
+    135deg,
+    var(--theme-accent-emerald),
+    var(--theme-accent-secondary),
+    var(--theme-accent-primary)
+  );
+
+  --text-gradient: linear-gradient(
+    90deg,
+    var(--theme-accent-primary),
+    var(--theme-accent-tertiary),
+    var(--theme-accent-seaweed)
+  );
+
+  --card-text-glow-gradient: linear-gradient(
+    135deg,
+    rgba(0, 255, 102, 0.08),  /* Neon */
+    rgba(127, 255, 0, 0.08),  /* Lemon Green */
+    rgba(34, 139, 34, 0.08)   /* Forest/Emerald */
+  );
+
+  --background-color: #021d0a; /* Deep black-green */
+
+  /* Background dot patterns */
+  --bg-dot-color: var(--theme-accent-primary);    /* Neon Lime */
+  --bg-dot-secondary: var(--theme-accent-tertiary); /* Lemon */
+  --bg-dot-tertiary: var(--theme-accent-emerald);   /* Emerald */
 }
+
+
+/* --- THEME 6: "Charcoal Blood" --- */
+:root.theme-mono {
+  --theme-dark-primary: #0d0d0d;   /* Deep Charcoal Black */
+  --theme-dark-secondary: #1a1a1a; /* Slightly lighter charcoal */
+  --theme-dark-tertiary: #2a2a2a;  /* Soft dark gray */
+
+  --theme-accent-primary: #e60026; /* Blood Red */
+  --theme-accent-secondary: #b3001b; /* Darker Blood */
+  --theme-accent-tertiary: #ff3347; /* Vibrant edge red */
+
+  --neutral-light: #f5f5f5; /* White/Silver */
+  --neutral-mid: #cccccc;   /* Mid gray */
+  --neutral-dark: #666666;  /* Steel gray */
+
+  --spinner-gradient: conic-gradient(from 180deg at 50% 50%,
+      var(--neutral-light) 0%,
+      var(--theme-accent-primary) 10%,
+      var(--theme-accent-secondary) 25%,
+      var(--neutral-mid) 40%,
+      transparent 65%);
+
+  --spinner-gradient-active: conic-gradient(from 180deg at 50% 50%,
+      var(--theme-accent-primary),
+      var(--theme-accent-tertiary),
+      var(--neutral-light),
+      var(--theme-accent-secondary),
+      var(--theme-accent-primary));
+
+  --fill-gradient: radial-gradient(
+    ellipse at bottom,
+    var(--theme-dark-secondary),
+    var(--theme-dark-primary) 80%
+  );
+
+  --fill-gradient-hover: linear-gradient(
+    135deg,
+    var(--theme-accent-secondary),
+    var(--theme-accent-primary),
+    var(--neutral-light)
+  );
+
+  --text-gradient: linear-gradient(
+    90deg,
+    var(--neutral-light),
+    var(--theme-accent-primary),
+    var(--neutral-mid)
+  );
+
+  --card-text-glow-gradient: linear-gradient(
+    135deg,
+    rgba(230, 0, 38, 0.08), /* Blood red */
+    rgba(255, 51, 71, 0.08), /* Vibrant red */
+    rgba(245, 245, 245, 0.08) /* White glow */
+  );
+
+  --background-color: #0b0b0b; /* Almost pure black */
+
+  /* Background dot patterns */
+  --bg-dot-color: var(--theme-accent-primary);   /* Blood red */
+  --bg-dot-secondary: var(--neutral-light);      /* Silver white */
+  --bg-dot-tertiary: var(--neutral-mid);         /* Mid gray */
+}
+
 
 /* Base body and typography styles */
 body {
@@ -289,7 +420,7 @@ to achieve a non-uniform, desynchronized effect.
   pointer-events: none;
   /* --- DYNAMIC ANIMATION --- */
   /* This animation is controlled by --spin-duration and --spin-delay, which are set by a script. */
-  animation: spin var(--spin-duration, 3s) ease-in-out var(--spin-delay, 0s) infinite;
+  animation: spin var(--spin-duration, 3s) ease-in-out var(--spin-delay, 2s) infinite;
 }
 
 .spinner-border:hover {

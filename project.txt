@@ -1,4 +1,4 @@
-E:\aakash\projects\chatbot\lang-graph-agentic-todo-app\backend>.\venv\Scripts\activate 
+E:\aakash\projects\chatbot\lang-graph-agentic-todo-app>backend\venv\Scripts\activate
 (venv) E:\aakash\projects\chatbot\lang-graph-agentic-todo-app>uvicorn backend.main:app --reload
 
 
@@ -8,6 +8,18 @@ Run the Docker Compose Command: This command reads the docker-compose.yml file a
 code
 docker-compose up -d
 
+note future plan
+
+setting custom dates, like set dates 25th sep tp 20th sep, agent should be able to handle it
+
+📊 Todo Stats for [time period]:
+• Total: 25 tasks
+• Created: 8 new tasks
+• Completed: 12 tasks  
+• Pending: 13 tasks
+• Updated: 5 tasks modified
+
+search bar in the filter
 
 thanks a lot
 now i want to upload this on git, 

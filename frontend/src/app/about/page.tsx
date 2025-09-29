@@ -159,7 +159,7 @@ export default function AboutPage() {
               <Link href="/todo">
                  <SpinnerButton>Launch App</SpinnerButton>
               </Link>
-              <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/AakaAltair/lang-graph-agentic-todo-app.git" target="_blank" rel="noopener noreferrer">
                  <SpinnerButton>View on GitHub</SpinnerButton>
               </a>
            </div>
