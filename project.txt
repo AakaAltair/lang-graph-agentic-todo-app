@@ -8,7 +8,10 @@ Run the Docker Compose Command: This command reads the docker-compose.yml file a
 code
 docker-compose up -d
 
-note future plan
+
+
+
+note future plan:
 
 setting custom dates, like set dates 25th sep tp 20th sep, agent should be able to handle it
 
@@ -21,15 +24,70 @@ setting custom dates, like set dates 25th sep tp 20th sep, agent should be able 
 
 search bar in the filter
 
-thanks a lot
-now i want to upload this on git, 
-so please provide read me to run this project step by step with the necessary codes and details about the project, tech stacks, and so on
-i already have uploaded a previous version
-but now i want to upload this version while preserving the previous one
+clear chat agentic command
+
+each manually done task should be able to be done with chat each button should be agentic 
+
+voice controlled
+
+floating chat should be aware of the ui state, the current: page, themes filters active and so on. to provide page and condition specific capabiity
+
+option to set temperature, model, pinpoint, narrow, broad semantic or similar searches
 
 
 
-will it be able to handle queries like:
+bugs:
+
+bug: show todos created today
+I apologize, but I encountered a technical issue when trying to retrieve the to-dos created today. The system returned an error, and I'm unable to complete that request at this moment.
+
+Would you like me to try something else, or perhaps you could try again later?
+apply the todays filter
+Okay, I've applied the "today" filter to your to-do list. You should now see tasks created today.
+
+Sol: it has two paths, use semantic search to get created time or use today filter
+
+bug: improvement in semantic search
+
+sol:
+
+bug: show tasks related to health
+I found 6 tasks related to 'health' for you, including 'Morning Yoga Routine', 'Marathon Training Session', 'Dentist Appointment', 'Basketball Practice', 'Annual Health Checkup', and 'swim'. I've spotlighted them on your main list.
+
+Would you like me to filter these further by status or date?
+how many of them are completed
+I'm sorry, I encountered an error when trying to filter the "health" related tasks by their completion status. I will try again.
+
+I'm sorry, but I'm currently experiencing an issue with filtering tasks by their completion status directly through my tools.
+
+However, based on the "health" related tasks I found previously, I can tell you that 2 of them are completed: 'Annual Health Checkup' and 'swim'.
+
+sol:
+
+bug: show stats
+I encountered an error when trying to retrieve the statistics. It seems there was an issue with the previous request.
+
+Let me try to get the current date and then I can try to fetch some general statistics for you.
+
+sol:
+
+current features:
+
+manually crud and filters
+
+agentic crid and filters
+
+agentic duplicate checker
+
+agentic UI aware and controlled
+
+semantic data retrieval
+
+
+
+
+
+
 here are todos, check and create the ones that are not present, do not create duplicate todos
 delete all the todos
 delete todos related to sports
@@ -52,55 +110,6 @@ Run 5 km as part of the half-marathon preparation plan.
 Compare flight prices and book round-trip tickets for the upcoming friends’ vacation.
 ]
 
-
-Sample crea Startup Ideas
-Description: Spend an hour writing potential app ideas and market opportunities for 2025.
-
-Title: 🦷 Dentist Appointment
-Description: Visit Dr. Kapoor for routine dental cleaning and checkup.
-
-Title: 🏀 Basketball Practice
-Description: Meet the team at the sports complex for a 2-hour basketball training session.
-
-Title: ✈️ Book Tickets for Goa Trip
-Description: Compare flight prices and book round-trip tickets for the upcoming friends’ vacation.te Todos
-
-Title: 🎂 Plan Birthday Surprise for Sarah
-Description: Buy a cake, decorations, and a small gift for Sarah’s birthday party on Saturday evening.
-
-Title: 🏥 Annual Health Checkup
-Description: Book an appointment with Dr. Mehta for a full-body health examination next week.
-
-Title: ⚽ Weekend Football Match
-Description: Join the neighborhood football game on Sunday morning at the community park.
-
-Title: 🍕 Friends Movie Night
-Description: Organize a movie night with college friends. Arrange popcorn, drinks, and Netflix setup.
-
-Title: 📚 Finish “Deep Work” Book
-Description: Complete reading the remaining three chapters and write down key takeaways for productivity.
-
-Title: 🧘 Morning Yoga Routine
-Description: Practice 30 minutes of yoga and breathing exercises to improve flexibility and mental calm.
-
-Title: 🛍️ Buy Groceries
-Description: Purchase vegetables, fruits, milk, and whole grains for the week.
-
-Title: 💼 Prepare Presentation for Client Meeting
-Description: Create a 10-slide presentation on Q3 sales results and upcoming marketing plans.
-
-Title: 🏃 Marathon Training Session
-Description: Run 5 km as part of the half-marathon preparation plan.
-
-Title: 🧑‍🍳 Cook Dinner for Parents
-Description: Try a new pasta recipe and prepare a warm family dinner on Friday night.
-
-Title: 🎮 Game Night with Friends
-Description: Set up multiplayer gaming on the console and invite friends for snacks and fun.
-
-Title: 💡 Brainstorm
-
-i want to make agentic ai todo app
 
 i want to create a simple CRUD todo web app, with few themes and pages (home, about, todo, settings)
 i want a floating chat ui, where user can chat and do tasks like

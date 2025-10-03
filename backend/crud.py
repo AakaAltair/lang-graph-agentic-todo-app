@@ -2,7 +2,7 @@ import re
 from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, asc # <-- 1. Import `desc` and `asc` for sorting
+from sqlalchemy import desc, asc, and_ # <-- 1. Import `desc` and `asc` for sorting
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai._common import GoogleGenerativeAIError
 
@@ -194,43 +194,54 @@ def query_database_todos(
     limit: int = 200
 ) -> List[models.Todo]:
     """
-    Performs a powerful semantic search with an optional similarity threshold,
-    and then applies metadata filters (status, date).
+    Performs an advanced, two-stage search using a CTE for vector search.
+    1. Pre-filters by metadata (status, date).
+    2. Performs an efficient Top-K semantic search on the pre-filtered results.
+    3. Applies a final similarity threshold to ensure high relevance.
     """
-    q = db.query(models.Todo)
     
-    # --- STEP 1: SEMANTIC FILTERING (if a query is provided) ---
-    if query:
-        query_embedding = get_embedding_for_text(query)
-        if not query_embedding:
-            # If embedding fails, we can't do a semantic search.
-            # Depending on desired behavior, we could return empty or just do metadata filtering.
-            # Let's proceed with metadata filtering on the whole dataset.
-            pass
-        else:
-            # pgvector's cosine distance is between 0 (identical) and 2 (opposite).
-            # A threshold of < 0.5 means "quite similar".
-            # You can adjust this value to make the search more strict or more broad.
-            SIMILARITY_THRESHOLD = 0.5 
-            
-            # This is the core of the fix. We filter the results based on their
-            # semantic distance to the query.
-            q = q.filter(models.Todo.embedding.cosine_distance(query_embedding) < SIMILARITY_THRESHOLD)
-            
-            # We still order by similarity to get the BEST matches first.
-            q = q.order_by(models.Todo.embedding.cosine_distance(query_embedding))
-
-    # --- STEP 2: METADATA FILTERING (applied after semantic filter) ---
+    # --- STEP 1: PRE-FILTER BY METADATA ---
+    # This is the most efficient first step, as it narrows down the rows
+    # before any expensive vector operations.
+    q = db.query(models.Todo)
     filters = []
     if completed is not None:
         filters.append(models.Todo.completed == completed)
     if start_date:
         filters.append(models.Todo.created_at >= start_date)
     if end_date:
-        # Add a day to include the entire end date
         filters.append(models.Todo.created_at < (end_date + timedelta(days=1)))
     
     if filters:
         q = q.filter(and_(*filters))
-        
-    return q.limit(limit).all()
+
+    # If there's no text query, we're done. Return the filtered results.
+    if not query:
+        return q.order_by(models.Todo.created_at.desc()).limit(limit).all()
+
+    # --- STEP 2: SEMANTIC SEARCH & THRESHOLDING (THE CORE FIX) ---
+    query_embedding = get_embedding_for_text(query)
+    if not query_embedding:
+        # If embedding fails, return the metadata-filtered results.
+        return q.order_by(models.Todo.created_at.desc()).limit(limit).all()
+
+    # We will use L2 distance (<->), as it's generally best for indexed filtering.
+    # L2 distance is a measure of dissimilarity (0 = identical).
+    # A threshold of < 1.0 is a good starting point for "closely related".
+    DISTANCE_THRESHOLD = 1.0
+
+    # Create a Common Table Expression (CTE) to find relevant items.
+    # This subquery finds the top candidates and their distance, and applies the threshold.
+    # This is the idiomatic `pgvector` + SQLAlchemy way.
+    distance_expression = models.Todo.embedding.l2_distance(query_embedding)
+    
+    subquery = q.add_columns(distance_expression.label("distance")) \
+                .filter(distance_expression < DISTANCE_THRESHOLD) \
+                .order_by(distance_expression) \
+                .limit(limit) \
+                .subquery()
+
+    # Final query selects the Todo entities from the subquery results.
+    final_query = db.query(models.Todo).select_entity_from(subquery)
+
+    return final_query.all()

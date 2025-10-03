@@ -2,6 +2,7 @@ from sqlalchemy import Boolean, Column, Integer, String, DateTime
 from sqlalchemy.sql import func
 from .database import Base
 from pgvector.sqlalchemy import Vector # <-- Import Vector type
+from sqlalchemy import Index # <-- Import Index
 
 
 class Todo(Base):
@@ -26,3 +27,10 @@ class Todo(Base):
         default=func.now(), # <-- Set initial value on creation
         onupdate=func.now()    # <-- Update value on any change
     )
+
+Index(
+    'ix_todos_embedding',
+    Todo.embedding,
+    postgresql_using='ivfflat',
+    postgresql_with={'lists': 100} # Number of lists for the index
+)
