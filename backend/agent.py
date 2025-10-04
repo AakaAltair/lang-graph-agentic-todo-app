@@ -118,27 +118,68 @@ def get_current_datetime() -> str:
     """Returns the current date and time."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+
+# THIS IS THE UPGRADED TOOL
 @tool(args_schema=PerformUIActionArgs)
 async def perform_ui_action(action: str, payload: str) -> str:
     """Performs a specific action on the frontend UI, such as navigation, changing settings, or applying filters."""
-    # Special handling for custom date range to parse natural language
+    
     if action == "set_custom_date_range":
         try:
-            # The payload for this action is the user's raw text, e.g., "yesterday and today"
-            start_str, end_str = payload.split("and")
-            parsed_start, parsed_end = _parse_dates(start_str.strip(), end_str.strip())
-            final_payload = {
-                "startDate": parsed_start.strftime("%Y-%m-%d") if parsed_start else "",
-                "endDate": parsed_end.strftime("%Y-%m-%d") if parsed_end else ""
-            }
-            command = {"type": "ui_action", "action": action, "payload": final_payload}
-        except Exception:
-            return "Error: Could not parse the date range. Please be more specific, like 'between date A and date B'."
-    else:
-      command = {"type": "ui_action", "action": action, "payload": payload}
+            # Step 1: Attempt to split the payload by common separators
+            parts = []
+            if " to " in payload.lower():
+                parts = [p.strip() for p in payload.lower().split("to")]
+            elif " and " in payload.lower():
+                parts = [p.strip() for p in payload.lower().split("and")]
+            
+            if len(parts) != 2:
+                # Provide a structured error that the LLM can relay
+                return json.dumps({
+                    "status": "error",
+                    "message": "I couldn't find a clear start and end date. Please try phrasing it like 'from [date] to [date]'."
+                })
 
-    await _broadcast_command(command)
-    return f"UI action '{action}' was successfully dispatched."
+            # Step 2: Parse the dates using the robust parser
+            start_str, end_str = parts[0], parts[1]
+            date1 = parse(start_str, default=datetime.now())
+            date2 = parse(end_str, default=datetime.now())
+            
+            # Step 3: Auto-correct the order
+            start_date_obj = min(date1, date2)
+            end_date_obj = max(date1, date2)
+            
+            # Step 4: Format the final payload for the frontend
+            final_payload = {
+                "startDate": start_date_obj.strftime("%Y-%m-%d"),
+                "endDate": end_date_obj.strftime("%Y-%m-%d")
+            }
+            command = {"type": "ui_action", "action": action, "payload": json.dumps(final_payload)}
+            
+            # Broadcast the command to the frontend
+            await _broadcast_command(command)
+
+            # Step 5: Return a structured SUCCESS message
+            return json.dumps({
+                "status": "success",
+                "message": f"Date range successfully set from {start_date_obj.strftime('%B %d')} to {end_date_obj.strftime('%B %d')}."
+            })
+            
+        except Exception as e:
+            # Catch any parsing errors and return a structured error
+            print(f"Error parsing date range '{payload}': {e}")
+            return json.dumps({
+                "status": "error",
+                "message": f"I had trouble understanding the date '{payload}'. Could you please try a different format?"
+            })
+    else:
+      # Logic for all other UI actions
+      command = {"type": "ui_action", "action": action, "payload": payload}
+      await _broadcast_command(command)
+      return json.dumps({
+          "status": "success",
+          "message": f"UI action '{action}' was successfully dispatched."
+      })
 
 
 # ==============================================================================

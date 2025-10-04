@@ -20,6 +20,7 @@ export const useModalStore = create<ModalState>((set) => ({
   setEditingTodoId: (id) => set({ editingTodoId: id }),
 }));
 
+
 // --- The WebSocket Manager Component ---
 const WebSocketManager = () => {
   const queryClient = useQueryClient();
@@ -126,19 +127,24 @@ const WebSocketManager = () => {
                     }
                     break;
 
-                // --- THIS IS THE CORRECTED CASE ---
+                // --- THIS IS THE UPDATED CASE ---
                 case 'set_custom_date_range':
                     console.log(`EXECUTING custom date range with payload:`, message.payload);
                     
-                    // The payload for this action is already a parsed object from the agent tool.
-                    const { startDate, endDate } = message.payload;
-                    
-                    // Update the state store with the dates received from the agent.
-                    if (startDate) setStartDate(startDate);
-                    if (endDate) setEndDate(endDate);
-                    
-                    // Automatically switch the active filter to 'custom' to show the date inputs on the UI.
-                    setDateFilter('custom');
+                    try {
+                        // The payload is a JSON string of an object, so we parse it.
+                        const { startDate, endDate } = JSON.parse(message.payload);
+                        
+                        // Update the state store with the dates received from the agent.
+                        if (startDate) setStartDate(startDate);
+                        if (endDate) setEndDate(endDate);
+                        
+                        // Automatically switch the active filter to 'custom' to show the date inputs on the UI.
+                        setDateFilter('custom');
+
+                    } catch (e) {
+                         console.error("Failed to parse custom date range payload:", e, "Payload was:", message.payload);
+                    }
                     break;
                 
                 default:
